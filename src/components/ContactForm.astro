@@ -1,0 +1,45 @@
+---
+import { business } from "../data/site";
+
+const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
+---
+
+<form class="contact-form" action={`https://formsubmit.co/${notifyEmail}`} method="POST">
+  <input type="hidden" name="_subject" value="BBNCS website — consultation request" />
+  <input type="hidden" name="_captcha" value="false" />
+  <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+
+  <div class="form-row">
+    <div>
+      <label for="quote-name">Name *</label>
+      <input id="quote-name" name="name" type="text" required placeholder="Your name" />
+    </div>
+    <div>
+      <label for="quote-phone">Phone *</label>
+      <input id="quote-phone" name="phone" type="tel" required placeholder="(951) 555-0100" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div>
+      <label for="quote-email">Email *</label>
+      <input id="quote-email" name="email" type="email" required placeholder="you@company.com" />
+    </div>
+    <div>
+      <label for="quote-service">Service *</label>
+      <select id="quote-service" name="service" required>
+        <option value="Managed IT">Managed IT</option>
+        <option value="Backup">Backup</option>
+        <option value="IT Support">IT Support</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-full">
+    <label for="quote-subject">Subject</label>
+    <input id="quote-subject" name="subject" type="text" placeholder="Optional" />
+  </div>
+  <div class="form-full">
+    <label for="quote-message">How can we help?</label>
+    <textarea id="quote-message" name="message" placeholder="Describe your IT needs"></textarea>
+  </div>
+  <button class="btn btn-primary" type="submit">Send request</button>
+</form>

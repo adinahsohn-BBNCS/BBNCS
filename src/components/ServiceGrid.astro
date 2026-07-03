@@ -1,0 +1,35 @@
+---
+import { services } from "../data/site";
+---
+
+<section class="services-panel" id="services">
+  <div class="services-panel-inner">
+    <div class="section-header section-header--light section-header--full section-header--tight">
+      <p class="section-label section-label-light">Our services</p>
+      <h2>Which service is right for you?</h2>
+      <p>
+        Not sure where to start? Here&rsquo;s how our three core IT solutions differ — and how they
+        work together.
+      </p>
+    </div>
+
+    <div class="service-grid">
+      {
+        services.map((service) => (
+          <a class="service-card" href={service.href}>
+            <h3>{service.title}</h3>
+            <p class="service-outcome">{service.outcome}</p>
+            <p class="service-desc">{service.description}</p>
+            <span class="card-link">Learn more</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <p class="services-panel-note">
+      Many clients use all three — managed IT keeps things running, backup protects your data, and
+      support is there when your team needs help. Pricing depends on your users, devices, and
+      services — we learn your setup first, then provide a clear quote with no surprise fees.
+    </p>
+  </div>
+</section>

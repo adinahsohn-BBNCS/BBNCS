@@ -1,0 +1,30 @@
+---
+import { industries } from "../data/home-sections";
+import { clientLogos } from "../data/site";
+---
+
+<section class="home-section home-section--logos" aria-label="Who we serve and clients we support">
+  <div class="section-inner">
+    <div class="section-header section-header--full section-header--tight">
+      <p class="section-label">Who we serve</p>
+      <h2>IT solutions for growing businesses</h2>
+      <p>
+        Businesses of about 5–100 employees — especially those without a full-time in-house IT team
+        who want a local partner that knows their setup.
+      </p>
+    </div>
+
+    <ul class="industry-list">
+      {industries.map((industry) => <li>{industry}</li>)}
+    </ul>
+
+    <p class="logo-strip-label">Trusted by local businesses</p>
+    <div class="logo-strip-logos">
+      {
+        clientLogos.map((logo) => (
+          <img src={logo.src} alt={logo.name} width="140" height="44" loading="lazy" />
+        ))
+      }
+    </div>
+  </div>
+</section>

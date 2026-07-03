@@ -1,0 +1,20 @@
+---
+import { business, consultationCta } from "../data/site";
+
+interface Props {
+  emphasisLead?: string;
+}
+
+const { emphasisLead } = Astro.props;
+---
+
+<section class="page-cta">
+  <div class="page-cta-inner">
+    {emphasisLead && <p class="page-cta-emphasis">{emphasisLead}</p>}
+    <h2>{consultationCta}</h2>
+    <p>
+      Call us today at <a href={`tel:${business.phoneTel}`}>{business.phone}</a>
+    </p>
+    <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+  </div>
+</section>

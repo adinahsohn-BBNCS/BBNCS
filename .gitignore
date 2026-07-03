@@ -1,0 +1,7 @@
+.env
+.env.deploy
+node_modules/
+dist/
+.astro/
+import/
+import/wp-content/

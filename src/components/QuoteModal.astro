@@ -1,0 +1,59 @@
+---
+import ContactForm from "./ContactForm.astro";
+---
+
+<div id="quote-modal" class="quote-modal" hidden role="dialog" aria-modal="true" aria-labelledby="quote-modal-title">
+  <button class="quote-modal-backdrop" type="button" aria-label="Close request form" data-close-quote></button>
+  <div class="quote-modal-dialog">
+    <button class="quote-modal-close" type="button" aria-label="Close" data-close-quote>
+      <span aria-hidden="true">×</span>
+    </button>
+    <h2 id="quote-modal-title">Request a quote</h2>
+    <p class="quote-modal-lead">
+      Tell us what you need. We&rsquo;ll follow up within one business day — often sooner — to
+      schedule a free 20–30 minute consultation with no obligation.
+    </p>
+    <ContactForm />
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const modal = document.getElementById("quote-modal");
+    if (!modal) return;
+
+    let lastFocus = null;
+
+    function openModal() {
+      lastFocus = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add("quote-modal-open");
+      const firstField = modal.querySelector("input:not([type='hidden'])");
+      if (firstField) firstField.focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove("quote-modal-open");
+      if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+    }
+
+    document.querySelectorAll("[data-open-quote]").forEach(function (trigger) {
+      trigger.addEventListener("click", function (event) {
+        event.preventDefault();
+        openModal();
+      });
+    });
+
+    modal.querySelectorAll("[data-close-quote]").forEach(function (el) {
+      el.addEventListener("click", closeModal);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !modal.hidden) closeModal();
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("quote") || window.location.hash === "#quote") openModal();
+  })();
+</script>

@@ -1,0 +1,13 @@
+---
+import ServicePageLayout from "../components/ServicePageLayout.astro";
+import { getServicePage } from "../data/service-pages";
+
+const page = getServicePage("managed-it-services")!;
+---
+
+<ServicePageLayout
+  page={page}
+  showHeroCta={false}
+  emphasizeClosing
+  showBodyCta={false}
+/>

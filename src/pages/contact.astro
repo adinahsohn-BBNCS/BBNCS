@@ -1,0 +1,101 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageCta from "../components/PageCta.astro";
+import PageHero from "../components/PageHero.astro";
+import { business } from "../data/site";
+
+const ctaEmphasis =
+  "Tell us about your setup and what you're dealing with — we'll recommend practical options with no pressure and no jargon.";
+---
+
+<BaseLayout
+  title="Contact"
+  description="Contact BBNCS in Temecula for managed IT, backup, and support. Request a free consultation or call us today."
+  current="contact"
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={`${business.tagline} · Temecula, CA`}
+      title="Contact us"
+      lead="Questions about managed IT, backup, or support? Reach out by phone or email — or request a quote and we'll follow up with next steps."
+      fullWidthLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner contact-page-inner">
+        <aside class="contact-page-card office-details">
+          <h2>Get in touch</h2>
+
+          <h3>Phone</h3>
+          <p>
+            <a href={`tel:${business.phoneTel}`}>{business.phone}</a>
+          </p>
+
+          <h3>Email</h3>
+          <p>
+            <a href={`mailto:${business.email}`}>{business.email}</a>
+          </p>
+
+          <h3>Office</h3>
+          <p class="office-address">
+            <strong>{business.name}</strong><br />
+            {business.address.line1}<br />
+            {business.address.city}, {business.address.state} {business.address.zip}
+          </p>
+          <p>
+            <a class="text-link" href="/office/">Office location &amp; directions →</a>
+          </p>
+
+          <h3>Hours</h3>
+          <ul class="office-hours">
+            {
+              business.hours.map((row) => (
+                <li>
+                  <span>
+                    {"note" in row && row.note && <em class="hours-note">{row.note}</em>}
+                    {row.days}
+                  </span>
+                  <span class="office-hours-time">{row.time}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="office-note">Emergency services available 24/7/365</p>
+        </aside>
+
+        <div class="contact-page-card contact-expectations office-details">
+          <h2>What to expect</h2>
+
+          <h3>Free consultation</h3>
+          <p>
+            A 20–30 minute call or visit (by appointment). We ask about your setup, what&rsquo;s
+            working, and what&rsquo;s frustrating — in plain language, with no pressure and no
+            obligation. You leave with clear next steps.
+          </p>
+
+          <h3>How quickly we respond</h3>
+          <p>
+            <strong>Monday–Friday, 8am–5pm:</strong> We aim to reply the same business day — often
+            within a few hours. <strong>Urgent issues:</strong> Call anytime; emergency support is
+            available 24/7/365. <strong>Weekends:</strong> Emergencies only (see hours above).
+          </p>
+
+          <h3>How we price our services</h3>
+          <p>
+            Plans are based on your users, devices, and the services you need — not a
+            one-size-fits-all package. We learn your setup first, then provide a clear quote with no
+            surprise fees.
+          </p>
+
+          <p>
+            <a class="text-link" href={business.googleReviewsUrl} target="_blank" rel="noopener noreferrer"
+              >Read our Google reviews →</a
+            >
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <PageCta emphasisLead={ctaEmphasis} />
+  </div>
+</BaseLayout>

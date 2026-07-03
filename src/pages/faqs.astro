@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import FaqList from "../components/FaqList.astro";
+import PageCta from "../components/PageCta.astro";
+import PageHero from "../components/PageHero.astro";
+
+const ctaEmphasis =
+  "Still have questions? BBNCS is here to help — reach out for clear answers and practical next steps.";
+---
+
+<BaseLayout
+  title="FAQs"
+  description="Answers to common questions about BBNCS managed IT, backup, remote support, and compliance."
+  current="faqs"
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow="FAQs · Temecula, CA"
+      title="FAQs"
+      lead="Answers to some commonly asked questions about our IT services."
+      nowrapLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner faq-page-inner">
+        <FaqList />
+      </div>
+    </section>
+
+    <PageCta emphasisLead={ctaEmphasis} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ServiceGrid from "../components/ServiceGrid.astro";
+import ClientLogos from "../components/ClientLogos.astro";
+import TrustStats from "../components/TrustStats.astro";
+import ProblemSolution from "../components/ProblemSolution.astro";
+import HowWeWork from "../components/HowWeWork.astro";
+import Testimonials from "../components/Testimonials.astro";
+import { business, consultationCta, services } from "../data/site";
+---
+
+<BaseLayout title={business.name} current="home">
+  <div class="home-page">
+    <section class="hero hero-home">
+      <div class="hero-shell">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="hero-eyebrow">Managed IT · Temecula, CA</p>
+            <h1>Get IT done right — without the downtime or surprises</h1>
+            <p class="hero-lead">
+              {business.tagline}. Complete IT solutions — managed services, backup, and support from
+              a local team keeping your systems secure and running.
+            </p>
+            <ul class="hero-highlights">
+              <li>Proactive monitoring — issues caught before they disrupt your day</li>
+              <li>Local Temecula team — on-site and remote support</li>
+              <li>One partner for managed IT, backup, and day-to-day support</li>
+              <li>24/7 emergency support — help when downtime can't wait</li>
+              <li>In business since 1989 — trusted by local companies for decades</li>
+              <li>Real technicians who know your setup — not a generic call center</li>
+            </ul>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-hidden="true">
+            <img
+              src="/images/services/it-service-management.jpg"
+              alt=""
+              width="640"
+              height="480"
+              loading="eager"
+            />
+            <div class="hero-tags">
+              {
+                services.map((service) => (
+                  <span class="hero-tag">{service.title}</span>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <TrustStats />
+      </div>
+    </section>
+
+    <ProblemSolution />
+
+    <ServiceGrid />
+
+    <HowWeWork />
+
+    <ClientLogos />
+
+    <Testimonials />
+  </div>
+</BaseLayout>

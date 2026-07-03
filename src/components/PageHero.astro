@@ -1,0 +1,29 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  compact?: boolean;
+  nowrapLead?: boolean;
+  fullWidthLead?: boolean;
+}
+
+const { eyebrow, title, lead, compact = false, nowrapLead = false, fullWidthLead = false } = Astro.props;
+---
+
+<header class:list={["page-hero", compact && "page-hero-compact"]}>
+  <div class="page-hero-shell">
+    <div class="page-hero-inner">
+      <p class="hero-eyebrow">{eyebrow}</p>
+      <h1>{title}</h1>
+      {
+        lead && (
+          <p class:list={["page-hero-lead", nowrapLead && "page-hero-lead-nowrap", fullWidthLead && "page-hero-lead--full"]}>
+            {lead}
+          </p>
+        )
+      }
+      <slot />
+    </div>
+  </div>
+</header>

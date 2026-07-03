@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageCta from "../components/PageCta.astro";
+import PageHero from "../components/PageHero.astro";
+import { business } from "../data/site";
+
+const ctaEmphasis =
+  "Real people, local support, and decades of experience you can count on.";
+---
+
+<BaseLayout
+  title="Office"
+  description="Visit BBNCS in Temecula, CA — managed IT and computer services at 27780 Jefferson Ave."
+  current="office"
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow="BBNCS Office · Temecula, CA"
+      title="Office"
+      lead={`In business since ${business.inBusinessSince} — proudly serving Temecula from our local office since ${business.temeculaSince}.`}
+      nowrapLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner office-layout">
+        <div class="office-map">
+          <iframe
+            title="BBNCS office location on Google Maps"
+            src={business.mapsEmbedSrc}
+            width="800"
+            height="450"
+            style="border:0;"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+
+        <aside class="contact-page-card office-details">
+          <h2>Visit us</h2>
+          <p class="office-address">
+            <strong>{business.name}</strong><br />
+            {business.address.line1}<br />
+            {business.address.city}, {business.address.state} {business.address.zip}
+          </p>
+          <p>
+            <a class="btn btn-primary" href={business.mapsUrl} target="_blank" rel="noopener noreferrer">
+              Get directions
+            </a>
+          </p>
+          <p>
+            <a class="text-link" href={business.googleReviewsUrl} target="_blank" rel="noopener noreferrer"
+              >Read our Google reviews →</a
+            >
+          </p>
+
+          <h3>Contact</h3>
+          <p>
+            <a href={`tel:${business.phoneTel}`}>{business.phone}</a><br />
+            <a href={`mailto:${business.email}`}>{business.email}</a>
+          </p>
+
+          <h3>Hours</h3>
+          <ul class="office-hours">
+            {
+              business.hours.map((row) => (
+                <li>
+                  <span>
+                    {"note" in row && row.note && <em class="hours-note">{row.note}</em>}
+                    {row.days}
+                  </span>
+                  <span class="office-hours-time">{row.time}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="office-note">Emergency services available 24/7/365</p>
+        </aside>
+      </div>
+    </section>
+
+    <PageCta emphasisLead={ctaEmphasis} />
+  </div>
+</BaseLayout>
