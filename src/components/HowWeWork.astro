@@ -1,0 +1,28 @@
+---
+import { howWeWork } from "../data/home-sections";
+import { consultationCta } from "../data/site";
+---
+<section class="home-section">
+  <div class="section-inner">
+    <div class="section-header section-header--full section-header--tight">
+      <p class="section-label">How we work</p>
+      <h2>Getting started is straightforward</h2>
+      <p>From first call to ongoing support — here&rsquo;s what working with BBNCS looks like.</p>
+    </div>
+
+    <div class="reason-list reason-list-thirds">
+      {
+        howWeWork.map((step) => (
+          <section class="reason-item">
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </section>
+        ))
+      }
+    </div>
+
+    <p class="home-section-cta">
+      <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+    </p>
+  </div>
+</section>

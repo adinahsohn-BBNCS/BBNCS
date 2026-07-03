@@ -1,0 +1,43 @@
+---
+import { consultationCta } from "../data/site";
+
+const problems = [
+  "IT issues keep pulling you away from running the business.",
+  "Downtime costs money — and peace of mind.",
+  "You're not confident your backups would actually restore.",
+  "Getting a real person on the phone shouldn't be this hard.",
+] as const;
+
+const solutions = [
+  "Proactive monitoring catches problems before they disrupt your day.",
+  "Fast response from a local team that knows your setup.",
+  "Managed backup you can count on when it matters.",
+  "One partner for managed IT, backup, and day-to-day support.",
+] as const;
+---
+
+<section class="pain-solution">
+  <div class="section-inner">
+    <div class="section-header section-header--full section-header--tight">
+      <p class="section-label">Sound familiar?</p>
+      <h2>IT problems shouldn&rsquo;t run your business</h2>
+      <p>Most owners we talk to are dealing with the same frustrations. Here&rsquo;s how we help.</p>
+    </div>
+
+    <div class="pain-solution-grid">
+      <div class="pain-column">
+        <h3>What we hear</h3>
+        <ul>
+          {problems.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div class="solution-column">
+        <h3>How we help</h3>
+        <ul>
+          {solutions.map((item) => <li>{item}</li>)}
+        </ul>
+        <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+      </div>
+    </div>
+  </div>
+</section>

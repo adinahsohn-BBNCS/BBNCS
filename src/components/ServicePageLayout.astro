@@ -1,0 +1,97 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageCta from "./PageCta.astro";
+import PageHero from "./PageHero.astro";
+import type { ServicePage } from "../data/service-pages";
+import { business, consultationCta } from "../data/site";
+
+interface Props {
+  page: ServicePage;
+  showHeroCta?: boolean;
+  emphasizeClosing?: boolean;
+  showBodyCta?: boolean;
+}
+
+const {
+  page,
+  showHeroCta = true,
+  emphasizeClosing = false,
+  showBodyCta = true,
+} = Astro.props;
+---
+
+<BaseLayout title={page.title} description={page.metaDescription} current={page.navKey}>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={page.heroEyebrow ?? `${business.shortName} · ${business.address.city}`}
+      title={page.heroTitle}
+      lead={page.heroLead}
+    >
+      {
+        showHeroCta && (
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+          </div>
+        )
+      }
+    </PageHero>
+
+    <section class="section section-tight">
+      <div class="service-body-inner">
+        {
+          page.image && (
+            <figure class="service-figure">
+              <img src={page.image} alt={page.imageAlt ?? ""} width="1200" height="600" loading="lazy" />
+            </figure>
+          )
+        }
+
+        <div class="service-prose">
+          <p class="section-label">Overview</p>
+          {page.pageHeading && <h2>{page.pageHeading}</h2>}
+          <p class:list={["service-intro", page.fullWidthIntro && "service-intro--full"]}>{page.intro}</p>
+
+          <div class="service-highlights">
+            <section class="reason-item service-includes-card">
+              <h3>What&rsquo;s included</h3>
+              <ul class="check-list">
+                {page.included.map((item) => <li>{item}</li>)}
+              </ul>
+            </section>
+
+            <aside class="solution-column scenario-callout">
+              <h3>Real-world example</h3>
+              <p>{page.scenario}</p>
+            </aside>
+          </div>
+
+          <div class="reason-list">
+            {
+              page.sections.map((section) => (
+                <section class="reason-item">
+                  <h3>{section.title}</h3>
+                  <p>{section.body}</p>
+                </section>
+              ))
+            }
+          </div>
+
+          {
+            !emphasizeClosing && (
+              <p class="service-closing">{page.closing}</p>
+            )
+          }
+          {
+            showBodyCta && (
+              <p class="service-cta-line">
+                <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+              </p>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <PageCta emphasisLead={emphasizeClosing ? page.closing : undefined} />
+  </div>
+</BaseLayout>

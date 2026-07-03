@@ -1,0 +1,33 @@
+---
+import { business } from "../data/site";
+
+const stats = [
+  {
+    label: "Local team",
+    value: business.address.city,
+    detail: `Serving Temecula since ${business.temeculaSince}`,
+  },
+  {
+    label: "Emergency support",
+    value: "24/7",
+    detail: "When you need us most",
+  },
+  {
+    label: "Core services",
+    value: "3",
+    detail: "Managed IT, backup & support",
+  },
+] as const;
+---
+
+<div class="trust-stats" aria-label="Why businesses trust BBNCS">
+  {
+    stats.map((stat) => (
+      <div class="trust-stat">
+        <p class="trust-stat-value">{stat.value}</p>
+        <p class="trust-stat-label">{stat.label}</p>
+        <p class="trust-stat-detail">{stat.detail}</p>
+      </div>
+    ))
+  }
+</div>

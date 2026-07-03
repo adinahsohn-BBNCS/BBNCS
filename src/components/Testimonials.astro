@@ -1,0 +1,32 @@
+---
+import { testimonials } from "../data/home-sections";
+import { business } from "../data/site";
+---
+
+<section class="home-section">
+  <div class="section-inner">
+    <div class="section-header section-header--full section-header--tight">
+      <p class="section-label">Client feedback</p>
+      <h2>What local businesses tell us</h2>
+      <p>Real results from companies that rely on BBNCS for their IT.</p>
+    </div>
+
+    <div class="reason-list reason-list-thirds">
+      {
+        testimonials.map((item) => (
+          <blockquote class="reason-item testimonial-item">
+            <p>&ldquo;{item.quote}&rdquo;</p>
+            <footer>— {item.attribution}</footer>
+          </blockquote>
+        ))
+      }
+    </div>
+
+    <p class="home-section-note">
+      Happy to provide references during your free consultation — or
+      <a class="text-link" href={business.googleReviewsUrl} target="_blank" rel="noopener noreferrer"
+        >read our Google reviews</a
+      >.
+    </p>
+  </div>
+</section>
