@@ -1,0 +1,23 @@
+---
+description: BBNCS project scope — keep separate from Fly LRE
+alwaysApply: true
+---
+
+# BBNCS only (not Fly LRE)
+
+This workspace is **BBNCS** — Bits, Bytes & Nibbles / bbncs.com. Do not mix it with Fly LRE.
+
+| | BBNCS (this project) | Fly LRE (separate) |
+|---|---|---|
+| Folder | `C:\Users\Adi\Projects\BBNCS` | `C:\Users\Adi\Projects\FLYLRE` |
+| Live site | https://bbncs.com | https://www.flylre.com |
+| GitHub | https://github.com/adinahsohn-BBNCS/BBNCS | https://github.com/adinahsohn-BBNCS/FLYLRE |
+| Dev port | 4322 | 4321 |
+| Deploy | `npm run deploy` → bbncs.com FTPS | `npm run deploy` → flylre.com SFTP |
+
+## Rules
+
+- Use **this repo’s** `.env.deploy`, scripts, and credentials only — never FLYLRE’s.
+- Never copy deploy config, env files, or site copy between the two projects unless the user explicitly asks.
+- `npm run deploy` updates **bbncs.com only** — not GitHub. Offer commit/push after major work; only commit when the user asks.
+- Never commit `.env`, `.env.deploy`, or personal files.

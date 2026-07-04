@@ -4,9 +4,10 @@ import { business } from "../data/site";
 const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
 ---
 
-<form class="contact-form" action={`https://formsubmit.co/${notifyEmail}`} method="POST">
+<form class="contact-form" id="bbncs-contact-form" action={`https://formsubmit.co/${notifyEmail}`} method="POST">
   <input type="hidden" name="_subject" value="BBNCS website — consultation request" />
   <input type="hidden" name="_captcha" value="false" />
+  <input type="hidden" name="_next" id="formsubmit-next" value="" />
   <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
 
   <div class="form-row">
@@ -43,3 +44,25 @@ const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
   </div>
   <button class="btn btn-primary" type="submit">Send request</button>
 </form>
+
+<script is:inline>
+  (function () {
+    var form = document.getElementById("bbncs-contact-form");
+    if (!form) return;
+
+    function buildReturnUrl() {
+      var url = new URL(window.location.href);
+      url.searchParams.delete("quote");
+      url.hash = "";
+      url.searchParams.set("sent", "1");
+      return url.toString();
+    }
+
+    var nextField = document.getElementById("formsubmit-next");
+    if (nextField) nextField.value = buildReturnUrl();
+
+    form.addEventListener("submit", function () {
+      if (nextField) nextField.value = buildReturnUrl();
+    });
+  })();
+</script>

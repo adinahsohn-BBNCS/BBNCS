@@ -1097,6 +1097,43 @@ body.quote-modal-open {
   overflow: hidden;
 }
 
+.form-success-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--blue-soft);
+  border-bottom: 1px solid rgba(30, 79, 214, 0.12);
+  color: var(--navy);
+  text-align: center;
+}
+
+.form-success-banner p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.form-success-banner[hidden] {
+  display: none;
+}
+
+.form-success-dismiss {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--slate-muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+}
+
+.form-success-dismiss:hover {
+  color: var(--navy);
+}
+
 .quote-modal {
   position: fixed;
   inset: 0;
