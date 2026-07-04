@@ -55,5 +55,22 @@ import ContactForm from "./ContactForm.astro";
 
     const params = new URLSearchParams(window.location.search);
     if (params.has("quote") || window.location.hash === "#quote") openModal();
+
+    if (params.get("sent") === "1") {
+      var banner = document.getElementById("form-success-banner");
+      if (banner) banner.hidden = false;
+      params.delete("sent");
+      var cleanSearch = params.toString();
+      var cleanUrl = window.location.pathname + (cleanSearch ? "?" + cleanSearch : "") + window.location.hash;
+      history.replaceState(null, "", cleanUrl);
+    }
+
+    var dismiss = document.querySelector(".form-success-dismiss");
+    if (dismiss) {
+      dismiss.addEventListener("click", function () {
+        var banner = document.getElementById("form-success-banner");
+        if (banner) banner.hidden = true;
+      });
+    }
   })();
 </script>
