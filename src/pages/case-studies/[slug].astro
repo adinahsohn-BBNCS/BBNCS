@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { buildBreadcrumbSchema } from "../../lib/seo";
+
+export async function getStaticPaths() {
+  const studies = await getCollection("caseStudies");
+  return studies.map((study) => ({
+    params: { slug: study.id },
+    props: { study },
+  }));
+}
+
+const { study } = Astro.props;
+const { Content } = await render(study);
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "Case Studies", path: "/case-studies/" },
+  { name: study.data.title, path: `/case-studies/${study.id}/` },
+]);
+---
+
+<BaseLayout title={study.data.title} description={study.data.description} structuredData={structuredData}>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={study.data.industry ? `Case study · ${study.data.industry}` : "Case study"}
+      title={study.data.title}
+      lead={study.data.description}
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner blog-article">
+        {
+          study.data.featuredQuote && (
+            <blockquote class="case-study-quote">
+              <p>&ldquo;{study.data.featuredQuote}&rdquo;</p>
+            </blockquote>
+          )
+        }
+        <div class="blog-prose">
+          <Content />
+        </div>
+        <p class="blog-back">
+          <a href="/case-studies/">← All case studies</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

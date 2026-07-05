@@ -3,7 +3,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageCta from "./PageCta.astro";
 import PageHero from "./PageHero.astro";
 import type { ServicePage } from "../data/service-pages";
-import { business, consultationCta } from "../data/site";
+import { business, consultationCta, services } from "../data/site";
+import { buildBreadcrumbSchema, buildServiceSchema } from "../lib/seo";
 
 interface Props {
   page: ServicePage;
@@ -18,9 +19,23 @@ const {
   emphasizeClosing = false,
   showBodyCta = true,
 } = Astro.props;
+
+const otherServices = services.filter((service) => !service.href.includes(page.slug));
+const structuredData = [
+  buildServiceSchema(page),
+  buildBreadcrumbSchema([
+    { name: "Home", path: "/" },
+    { name: page.title, path: `/${page.slug}/` },
+  ]),
+];
 ---
 
-<BaseLayout title={page.title} description={page.metaDescription} current={page.navKey}>
+<BaseLayout
+  title={page.title}
+  description={page.metaDescription}
+  current={page.navKey}
+  structuredData={structuredData}
+>
   <div class="inner-page">
     <PageHero
       eyebrow={page.heroEyebrow ?? `${business.shortName} · ${business.address.city}`}
@@ -30,7 +45,7 @@ const {
       {
         showHeroCta && (
           <div class="hero-actions">
-            <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+            <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
           </div>
         )
       }
@@ -50,6 +65,15 @@ const {
           <p class="section-label">Overview</p>
           {page.pageHeading && <h2>{page.pageHeading}</h2>}
           <p class:list={["service-intro", page.fullWidthIntro && "service-intro--full"]}>{page.intro}</p>
+
+          {
+            page.localAudience && (
+              <section class="reason-item service-local-audience">
+                <h3>Who this is for in Temecula</h3>
+                <p>{page.localAudience}</p>
+              </section>
+            )
+          }
 
           <div class="service-highlights">
             <section class="reason-item service-includes-card">
@@ -84,10 +108,26 @@ const {
           {
             showBodyCta && (
               <p class="service-cta-line">
-                <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+                <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
               </p>
             )
           }
+
+          <nav class="service-related" aria-label="Related services">
+            <h3>Explore other BBNCS services</h3>
+            <ul>
+              {
+                otherServices.map((service) => (
+                  <li>
+                    <a href={service.href}>{service.title}</a> — {service.outcome}
+                  </li>
+                ))
+              }
+              <li>
+                <a href="/contact/">Contact us</a> — {consultationCta.toLowerCase()}
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </section>

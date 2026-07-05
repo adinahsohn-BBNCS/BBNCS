@@ -25,11 +25,16 @@ export const business = {
   mapsEmbedSrc:
     "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d13306.510826950016!2d-117.156951!3d33.511062!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80db7e33eb9757a3%3A0xe69b493f8a7f9e6c!2sBits%20Bytes%20and%20Nibbles%20Computer%20Repair!5e0!3m2!1sen!2sus!4v1679953628494!5m2!1sen!2sus",
   social: {
-    facebook: "#",
-    twitter: "#",
-    instagram: "#",
-    youtube: "#",
-    linkedin: "#",
+    facebook: "https://www.facebook.com/bits-bytes-and-nibbles-368782795024",
+    twitter: "",
+    instagram: "",
+    youtube: "",
+    linkedin: "",
+  },
+  nap: {
+    name: "Bits, Bytes & Nibbles",
+    address: "27780 Jefferson Ave, Suite G, Temecula, CA 92590",
+    phone: "951-506-4755",
   },
 } as const;
 
@@ -78,7 +83,11 @@ export const socialLinks = [
   { key: "instagram", label: "Instagram", href: business.social.instagram },
   { key: "youtube", label: "YouTube", href: business.social.youtube },
   { key: "linkedin", label: "LinkedIn", href: business.social.linkedin },
-] as const;
+].filter((link) => link.href && link.href !== "#") as {
+  key: "facebook" | "twitter" | "instagram" | "youtube" | "linkedin";
+  label: string;
+  href: string;
+}[];
 
 export const navLinks = [
   { label: "Home", href: "/", key: "home" },

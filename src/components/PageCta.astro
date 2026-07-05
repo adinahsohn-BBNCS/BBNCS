@@ -13,8 +13,8 @@ const { emphasisLead } = Astro.props;
     {emphasisLead && <p class="page-cta-emphasis">{emphasisLead}</p>}
     <h2>{consultationCta}</h2>
     <p>
-      Call us today at <a href={`tel:${business.phoneTel}`}>{business.phone}</a>
+      Call us today at <a href={`tel:${business.phoneTel}`} data-analytics-event="phone_click">{business.phone}</a>
     </p>
-    <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+    <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
   </div>
 </section>

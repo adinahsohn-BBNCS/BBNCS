@@ -20,6 +20,7 @@ export type ServicePage = {
   closing: string;
   image?: string;
   imageAlt?: string;
+  localAudience?: string;
 };
 
 export const servicePages: ServicePage[] = [
@@ -78,6 +79,8 @@ export const servicePages: ServicePage[] = [
     ],
     closing:
       "Choosing BBNCS for managed IT means investing in the future of your business. With unparalleled support, robust security, and scalable solutions, your IT is in expert hands.",
+    localAudience:
+      "Temecula and Inland Empire businesses with 5–100 employees that want proactive IT management — offices, professional services firms, medical practices, dealerships, and contractors who need a local partner, not a distant help desk.",
     image: "/images/services/it-service-management.jpg",
     imageAlt: "IT team managing business technology",
   },
@@ -136,6 +139,8 @@ export const servicePages: ServicePage[] = [
     ],
     closing:
       "Don't leave your business data at risk. Choose BBNCS for backup you can trust — secure, protected, and easily recoverable.",
+    localAudience:
+      "Temecula-area companies that cannot afford downtime or data loss — especially healthcare, finance, and businesses with compliance requirements who need monitored, tested backups with a local team on call.",
     image: "/images/services/managed-backup.svg",
     imageAlt: "Cloud backup with encrypted data protection",
   },
@@ -194,6 +199,8 @@ export const servicePages: ServicePage[] = [
     ],
     closing:
       "Partner with a team dedicated to your success. Trust BBNCS to keep your IT environment running at peak performance.",
+    localAudience:
+      "Temecula businesses that need responsive help — new employee setups, email and printer issues, remote troubleshooting, and on-site visits when hardware or network work requires a technician at your office.",
   },
 ];
 

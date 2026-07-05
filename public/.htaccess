@@ -1,0 +1,20 @@
+# BBNCS — HTTPS, canonical host, and WordPress migration redirects
+
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Canonical host: bbncs.com (redirect www to apex)
+RewriteCond %{HTTP_HOST} ^www\.bbncs\.com [NC]
+RewriteRule ^(.*)$ https://bbncs.com/$1 [L,R=301]
+
+# WordPress pages removed or renamed in Astro rebuild
+RedirectMatch 301 ^/friends/?$ https://bbncs.com/
+RedirectMatch 301 ^/accountant-home/?$ https://bbncs.com/
+RedirectMatch 301 ^/it-service-management/?$ https://bbncs.com/managed-it-services/
+
+# Trailing slash consistency for Astro static routes
+DirectoryIndex index.html
+RedirectMatch 301 ^/about/?$ https://bbncs.com/about-us/

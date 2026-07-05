@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageCta from "../components/PageCta.astro";
+import PageHero from "../components/PageHero.astro";
+import ClientLogos from "../components/ClientLogos.astro";
+import { business, consultationCta, services } from "../data/site";
+import { industries } from "../data/home-sections";
+import { buildBreadcrumbSchema } from "../lib/seo";
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about-us/" },
+]);
+---
+
+<BaseLayout
+  title="About BBNCS"
+  description={`About ${business.name} — Temecula managed IT provider in business since ${business.inBusinessSince}, serving local businesses with 5–100 employees.`}
+  structuredData={structuredData}
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={`About · ${business.address.city}, CA`}
+      title={`Your local IT partner since ${business.inBusinessSince}`}
+      lead={`${business.name} (${business.shortName}) helps Temecula and Inland Empire businesses run reliable, secure technology — with the personal service you expect from a local team.`}
+    >
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
+      </div>
+    </PageHero>
+
+    <section class="section section-tight">
+      <div class="section-inner service-prose">
+        <p class="section-label">Who we are</p>
+        <p class="service-intro service-intro--full">
+          BBNCS is Bits, Bytes & Nibbles — a Temecula-based IT services company. We've been in business
+          since {business.inBusinessSince} and proudly served the Temecula community from our Jefferson Ave
+          office since {business.temeculaSince}. We're not a national call center: the same technicians who
+          monitor your systems are the ones you talk to when something breaks.
+        </p>
+
+        <div class="reason-list">
+          <section class="reason-item">
+            <h2>Who we serve</h2>
+            <p>
+              Most clients have 5–100 employees — large enough to need professional IT, small enough to
+              want a relationship with their provider. We support offices throughout Temecula, Murrieta,
+              Menifee, and Riverside County.
+            </p>
+          </section>
+
+          <section class="reason-item">
+            <h2>What we do</h2>
+            <ul class="check-list">
+              {
+                services.map((service) => (
+                  <li>
+                    <a href={service.href}>{service.title}</a> — {service.outcome}
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+
+          <section class="reason-item">
+            <h2>Industries we know well</h2>
+            <ul class="check-list">
+              {industries.map((industry) => <li>{industry}</li>)}
+            </ul>
+          </section>
+
+          <section class="reason-item">
+            <h2>Visit us in Temecula</h2>
+            <p>
+              {business.address.full} · <a href={`tel:${business.phoneTel}`} data-analytics-event="phone_click">{business.phone}</a> ·
+              <a href="/office/"> Office hours and directions</a>
+            </p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <ClientLogos />
+
+    <PageCta emphasisLead="See why local businesses trust BBNCS — schedule your free consultation today." />
+  </div>
+</BaseLayout>

@@ -94,23 +94,62 @@ function Remove-FtpTree {
   }
 }
 
+function Test-FtpPathExists {
+  param([string]$RemotePath)
+  try {
+    $request = New-FtpRequest -RemotePath $RemotePath -Method ([System.Net.WebRequestMethods+Ftp]::ListDirectory)
+    $response = $request.GetResponse()
+    $response.Close()
+    return $true
+  } catch {
+    return $false
+  }
+}
+
 function Ensure-FtpDirectory {
   param([string]$RemotePath)
   if (-not $RemotePath) { return }
-  $parts = $RemotePath -split "/"
+  $normalized = ($RemotePath -replace "\\", "/").Trim("/")
+  $parts = $normalized -split "/"
   $current = ""
   foreach ($part in $parts) {
     if (-not $part) { continue }
     $current = if ($current) { "$current/$part" } else { $part }
+    if (Test-FtpPathExists $current) { continue }
+    Write-Host "  creating dir $current"
     try {
-      $null = Get-FtpDetailedListing -RemotePath $current
-    } catch {
-      Write-Host "  creating dir $current"
       $request = New-FtpRequest -RemotePath $current -Method ([System.Net.WebRequestMethods+Ftp]::MakeDirectory)
       $response = $request.GetResponse()
       $response.Close()
+    } catch {
+      if (-not (Test-FtpPathExists $current)) { throw }
     }
   }
+}
+
+function Get-FtpFileSize {
+  param([string]$RemotePath)
+  try {
+    $request = New-FtpRequest -RemotePath $RemotePath -Method ([System.Net.WebRequestMethods+Ftp]::GetFileSize)
+    $response = $request.GetResponse()
+    $size = [long]$response.ContentLength
+    if ($size -le 0 -and $response.StatusDescription -match "(\d+)") {
+      $size = [long]$Matches[1]
+    }
+    $response.Close()
+    return $size
+  } catch {
+    return -1
+  }
+}
+
+function Remove-FtpFileIfExists {
+  param([string]$RemotePath)
+  try {
+    $request = New-FtpRequest -RemotePath $RemotePath -Method ([System.Net.WebRequestMethods+Ftp]::DeleteFile)
+    $response = $request.GetResponse()
+    $response.Close()
+  } catch {}
 }
 
 function Send-FtpFile {
@@ -118,18 +157,45 @@ function Send-FtpFile {
     [string]$LocalPath,
     [string]$RemotePath
   )
-  $remoteDir = Split-Path $RemotePath -Parent
-  if ($remoteDir) {
-    Ensure-FtpDirectory -RemotePath ($remoteDir -replace "\\", "/")
+  $remotePath = $RemotePath -replace "\\", "/"
+  $remoteDir = (Split-Path $remotePath -Parent) -replace "\\", "/"
+  $expectedSize = (Get-Item $LocalPath).Length
+  if ($remoteDir -and $remoteDir -ne ".") {
+    Ensure-FtpDirectory -RemotePath $remoteDir
   }
-  $request = New-FtpRequest -RemotePath $RemotePath -Method ([System.Net.WebRequestMethods+Ftp]::UploadFile)
-  $request.ContentLength = (Get-Item $LocalPath).Length
-  $stream = $request.GetRequestStream()
-  $fileBytes = [System.IO.File]::ReadAllBytes($LocalPath)
-  $stream.Write($fileBytes, 0, $fileBytes.Length)
-  $stream.Close()
-  $response = $request.GetResponse()
-  $response.Close()
+  $attempts = 0
+  while ($attempts -lt 4) {
+    $attempts++
+    try {
+      Remove-FtpFileIfExists -RemotePath $remotePath
+      $request = New-FtpRequest -RemotePath $remotePath -Method ([System.Net.WebRequestMethods+Ftp]::UploadFile)
+      $request.ContentLength = $expectedSize
+      $stream = $request.GetRequestStream()
+      $fileBytes = [System.IO.File]::ReadAllBytes($LocalPath)
+      $stream.Write($fileBytes, 0, $fileBytes.Length)
+      try { $stream.Close() } catch {}
+      try {
+        $response = $request.GetResponse()
+        $response.Close()
+      } catch {
+        if ($_.Exception.Message -notmatch "\(451\)") { throw }
+      }
+      Start-Sleep -Milliseconds 300
+      $remoteSize = Get-FtpFileSize -RemotePath $remotePath
+      if ($remoteSize -eq $expectedSize) {
+        return $true
+      }
+      Write-Host "  size mismatch for $remotePath (local $expectedSize, remote $remoteSize)"
+    } catch {
+      if ($attempts -ge 4) {
+        Write-Warning "  failed $remotePath after $attempts attempts: $($_.Exception.Message)"
+        return $false
+      }
+      Write-Host "  retrying $remotePath (attempt $attempts)"
+    }
+    Start-Sleep -Seconds 3
+  }
+  return $false
 }
 
 function Upload-FtpDirectory {
@@ -137,24 +203,20 @@ function Upload-FtpDirectory {
     [string]$LocalPath,
     [string]$RemotePath = ""
   )
-  Get-ChildItem -LiteralPath $LocalPath -Force | ForEach-Object {
-    $item = $_
+  $children = Get-ChildItem -LiteralPath $LocalPath -Force | Sort-Object PSIsContainer, Name
+  foreach ($item in $children) {
     $remoteItem = if ($RemotePath) { "$RemotePath/$($item.Name)" } else { $item.Name }
     if ($item.PSIsContainer) {
       Ensure-FtpDirectory -RemotePath $remoteItem
       Upload-FtpDirectory -LocalPath $item.FullName -RemotePath $remoteItem
     } else {
-      try {
-        Send-FtpFile -LocalPath $item.FullName -RemotePath $remoteItem
+      $ok = Send-FtpFile -LocalPath $item.FullName -RemotePath $remoteItem
+      if ($ok) {
         Write-Host "  uploaded $remoteItem"
-        Start-Sleep -Milliseconds 250
-      } catch {
-        Write-Host "  retrying $remoteItem"
-        Start-Sleep -Seconds 2
-        Send-FtpFile -LocalPath $item.FullName -RemotePath $remoteItem
-        Write-Host "  uploaded $remoteItem"
-        Start-Sleep -Milliseconds 250
+      } else {
+        $script:UploadFailures += $remoteItem
       }
+      Start-Sleep -Milliseconds 500
     }
   }
 }
@@ -200,7 +262,15 @@ if ($SkipClean) {
 }
 
 Write-Host "Uploading new site from dist/ ..."
+$script:UploadFailures = @()
 Upload-FtpDirectory -LocalPath $DistPath
+
+if ($script:UploadFailures.Count -gt 0) {
+  Write-Host ""
+  Write-Warning "Some files failed to upload:"
+  $script:UploadFailures | ForEach-Object { Write-Warning "  $_" }
+  throw "Deploy incomplete - $($script:UploadFailures.Count) file(s) failed."
+}
 
 Write-Host ""
 Write-Host "Deploy complete. Verify https://bbncs.com"

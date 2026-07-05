@@ -1,6 +1,8 @@
 export type FaqItem = {
   question: string;
   answer: string;
+  relatedHref?: string;
+  relatedLabel?: string;
 };
 
 export const faqs: FaqItem[] = [
@@ -18,6 +20,8 @@ export const faqs: FaqItem[] = [
     question: "Which BBNCS service is right for my business?",
     answer:
       "It depends on what you need most. Managed IT is an ongoing partnership — we proactively monitor and manage your systems. Managed backup protects and recovers your data if something goes wrong. IT support is help when you need it, remote or on-site. Many businesses use all three. Contact us for a free consultation and we'll recommend the right mix for your setup.",
+    relatedHref: "/managed-it-services/",
+    relatedLabel: "Managed IT Services",
   },
   {
     question: "What are managed IT services?",
@@ -63,5 +67,35 @@ export const faqs: FaqItem[] = [
     question: "How do you handle data backup and recovery in the event of a disaster?",
     answer:
       "Our managed backup services include disaster recovery planning. We maintain regular off-site backups and can restore data quickly after a disaster to minimize downtime and data loss.",
+    relatedHref: "/managed-backup-solutions/",
+    relatedLabel: "Managed Backup Solutions",
+  },
+  {
+    question: "Do you support businesses outside Temecula?",
+    answer:
+      "Yes. We're based in Temecula and serve businesses throughout the Inland Empire — Murrieta, Menifee, Lake Elsinore, and greater Riverside County. Most support is remote; we come on-site when your issue requires it.",
+    relatedHref: "/temecula-it-services/",
+    relatedLabel: "IT services in Temecula",
+  },
+  {
+    question: "Can you help with Microsoft 365 or email migration?",
+    answer:
+      "Yes. We help Temecula businesses set up, migrate, and support Microsoft 365, Google Workspace, and on-premise email. That includes new-user onboarding, security settings, and troubleshooting day-to-day issues.",
+    relatedHref: "/it-support-services/",
+    relatedLabel: "IT Support Services",
+  },
+  {
+    question: "What size businesses do you typically work with?",
+    answer:
+      "Most of our clients have between 5 and 100 employees — large enough to need reliable IT, small enough to want a personal relationship with their provider. If you're growing or unsure where you fit, start with a free consultation.",
+    relatedHref: "/about-us/",
+    relatedLabel: "About BBNCS",
+  },
+  {
+    question: "How is BBNCS different from a national IT call center?",
+    answer:
+      "You work with a local Temecula team that learns your network and your people. The same technicians handle monitoring, backup, and support — so you're not repeating your story to a new agent every time.",
+    relatedHref: "/about-us/",
+    relatedLabel: "About BBNCS",
   },
 ];

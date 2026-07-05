@@ -1,0 +1,8 @@
+---
+import LocationPageLayout from "../components/LocationPageLayout.astro";
+import { getLocationPage } from "../data/location-pages";
+
+const page = getLocationPage("temecula-it-services")!;
+---
+
+<LocationPageLayout page={page} />

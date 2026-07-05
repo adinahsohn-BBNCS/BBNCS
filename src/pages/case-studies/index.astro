@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { buildBreadcrumbSchema } from "../../lib/seo";
+
+const studies = (await getCollection("caseStudies")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "Case Studies", path: "/case-studies/" },
+]);
+---
+
+<BaseLayout
+  title="Case Studies"
+  description="How BBNCS helps Temecula businesses solve IT challenges — real scenarios, practical outcomes."
+  structuredData={structuredData}
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow="Client results · BBNCS"
+      title="Case studies"
+      lead="Examples of how local businesses improved reliability, backup, and day-to-day IT support."
+      nowrapLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner">
+        <ul class="blog-list">
+          {
+            studies.map((study) => (
+              <li class="blog-list-item">
+                <article>
+                  {
+                    study.data.industry && (
+                      <p class="blog-date">{study.data.industry}</p>
+                    )
+                  }
+                  <h2>
+                    <a href={`/case-studies/${study.id}/`}>{study.data.title}</a>
+                  </h2>
+                  <p>{study.data.description}</p>
+                </article>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
