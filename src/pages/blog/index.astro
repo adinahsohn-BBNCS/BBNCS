@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { getCollection } from "astro:content";
+import { buildBreadcrumbSchema } from "../../lib/seo";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "Blog", path: "/blog/" },
+]);
+---
+
+<BaseLayout
+  title="Blog"
+  description="IT tips and insights for Temecula businesses — backup, security, managed IT, and practical advice from BBNCS."
+  structuredData={structuredData}
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow="Resources · BBNCS"
+      title="Blog"
+      lead="Practical IT guidance for Temecula and Inland Empire business owners."
+      nowrapLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner">
+        <ul class="blog-list">
+          {
+            posts.map((post) => (
+              <li class="blog-list-item">
+                <article>
+                  <time datetime={post.data.pubDate.toISOString()} class="blog-date">
+                    {post.data.pubDate.toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                  <h2>
+                    <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                  </h2>
+                  <p>{post.data.description}</p>
+                </article>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

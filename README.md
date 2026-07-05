@@ -47,6 +47,25 @@ npm run deploy -- -SkipClean
 
 Deploy uses FTPS to `public_html/`. It does not update GitHub — commit and push separately when you want a backup.
 
+## SEO
+
+The site includes sitemap, robots.txt, canonical URLs, Open Graph tags, and JSON-LD structured data.
+
+### Analytics (optional)
+
+Copy `.env.example` to `.env` and add your Google Analytics 4 and Search Console verification IDs, then deploy.
+
+### SEO playbooks
+
+- [Google Business Profile checklist](docs/seo/gbp-checklist.md)
+- [Citations and NAP consistency](docs/seo/citations-nap.md)
+- [Analytics and Search Console setup](docs/seo/analytics-setup.md)
+- [Monthly KPI review template](docs/seo/monthly-kpi-review.md)
+
+### Blog and case studies
+
+Add markdown files to `src/content/blog/` and `src/content/case-studies/`, then deploy.
+
 ## Status
 
 - Live at [bbncs.com](https://bbncs.com/) (Astro static site)

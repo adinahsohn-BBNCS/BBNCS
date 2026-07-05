@@ -15,11 +15,11 @@ import { business, consultationCta, services } from "../data/site";
       <div class="hero-shell">
         <div class="hero-grid">
           <div class="hero-copy">
-            <p class="hero-eyebrow">Managed IT · Temecula, CA</p>
+            <p class="hero-eyebrow">Managed IT services · Temecula, CA</p>
             <h1>Get IT done right — without the downtime or surprises</h1>
             <p class="hero-lead">
-              {business.tagline}. Complete IT solutions — managed services, backup, and support from
-              a local team keeping your systems secure and running.
+              {business.tagline}. Managed IT services in Temecula — backup and support from a local team
+              keeping your systems secure and running.
             </p>
             <ul class="hero-highlights">
               <li>Proactive monitoring — issues caught before they disrupt your day</li>
@@ -30,7 +30,7 @@ import { business, consultationCta, services } from "../data/site";
               <li>Real technicians who know your setup — not a generic call center</li>
             </ul>
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/contact/?quote">{consultationCta}</a>
+              <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
             </div>
           </div>
 

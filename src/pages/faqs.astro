@@ -3,15 +3,26 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import FaqList from "../components/FaqList.astro";
 import PageCta from "../components/PageCta.astro";
 import PageHero from "../components/PageHero.astro";
+import { faqs } from "../data/faqs";
+import { buildBreadcrumbSchema, buildFaqSchema } from "../lib/seo";
 
 const ctaEmphasis =
   "Still have questions? BBNCS is here to help — reach out for clear answers and practical next steps.";
+
+const structuredData = [
+  buildFaqSchema(faqs),
+  buildBreadcrumbSchema([
+    { name: "Home", path: "/" },
+    { name: "FAQs", path: "/faqs/" },
+  ]),
+];
 ---
 
 <BaseLayout
   title="FAQs"
   description="Answers to common questions about BBNCS managed IT, backup, remote support, and compliance."
   current="faqs"
+  structuredData={structuredData}
 >
   <div class="inner-page">
     <PageHero

@@ -8,6 +8,13 @@ import { faqs } from "../data/faqs";
       <details class="faq-item">
         <summary>{faq.question}</summary>
         <p>{faq.answer}</p>
+        {
+          faq.relatedHref && faq.relatedLabel && (
+            <p class="faq-related">
+              <a href={faq.relatedHref}>Learn more: {faq.relatedLabel} →</a>
+            </p>
+          )
+        }
       </details>
     ))
   }

@@ -1,0 +1,8 @@
+---
+import LocationPageLayout from "../components/LocationPageLayout.astro";
+import { getLocationPage } from "../data/location-pages";
+
+const page = getLocationPage("managed-backup-temecula")!;
+---
+
+<LocationPageLayout page={page} />

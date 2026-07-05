@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageCta from "./PageCta.astro";
+import PageHero from "./PageHero.astro";
+import type { LocationPage } from "../data/location-pages";
+import { consultationCta } from "../data/site";
+import { buildBreadcrumbSchema } from "../lib/seo";
+
+interface Props {
+  page: LocationPage;
+}
+
+const { page } = Astro.props;
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: page.title, path: `/${page.slug}/` },
+]);
+---
+
+<BaseLayout title={page.title} description={page.metaDescription} structuredData={structuredData}>
+  <div class="inner-page">
+    <PageHero eyebrow={page.heroEyebrow} title={page.heroTitle} lead={page.heroLead}>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/contact/?quote" data-analytics-event="consultation_cta_click">{consultationCta}</a>
+      </div>
+    </PageHero>
+
+    <section class="section section-tight">
+      <div class="section-inner service-prose">
+        <p class="section-label">Local IT partner</p>
+        <p class="service-intro service-intro--full">{page.intro}</p>
+
+        <div class="reason-list">
+          {
+            page.sections.map((section) => (
+              <section class="reason-item">
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+              </section>
+            ))
+          }
+        </div>
+
+        <nav class="service-related" aria-label="Related pages">
+          <h2>Learn more</h2>
+          <ul>
+            {
+              page.relatedLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <PageCta emphasisLead="Talk with a local Temecula technician — free consultation, no obligation." />
+  </div>
+</BaseLayout>

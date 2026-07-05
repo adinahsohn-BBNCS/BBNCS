@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { buildBreadcrumbSchema } from "../../lib/seo";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "Blog", path: "/blog/" },
+  { name: post.data.title, path: `/blog/${post.id}/` },
+]);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} structuredData={structuredData}>
+  <div class="inner-page">
+    <PageHero eyebrow="BBNCS Blog" title={post.data.title} lead={post.data.description} />
+
+    <section class="section section-tight">
+      <div class="section-inner blog-article">
+        <p class="blog-meta">
+          <time datetime={post.data.pubDate.toISOString()}>
+            {
+              post.data.pubDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            }
+          </time>
+          {
+            post.data.tags.length > 0 && (
+              <span class="blog-tags">
+                {post.data.tags.map((tag) => (
+                  <span class="blog-tag">{tag}</span>
+                ))}
+              </span>
+            )
+          }
+        </p>
+        <div class="blog-prose">
+          <Content />
+        </div>
+        <p class="blog-back">
+          <a href="/blog/">← Back to blog</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

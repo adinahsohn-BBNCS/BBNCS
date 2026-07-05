@@ -1,0 +1,65 @@
+---
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+---
+
+{
+  gaId && (
+    <script
+      is:inline
+      set:html={`(function () {
+  var GA_ID = window.BBNCS_GA_ID || "${gaId}";
+
+  function track(name, params) {
+    var payload = Object.assign({ send_to: GA_ID }, params || {});
+    gtag("event", name, payload);
+  }
+
+  window.bbncsTrack = track;
+
+  function bindAnalytics() {
+    document.querySelectorAll("[data-analytics-event]").forEach(function (el) {
+      if (el.dataset.analyticsBound === "1") return;
+      el.dataset.analyticsBound = "1";
+      var eventName = el.getAttribute("data-analytics-event");
+      if (!eventName) return;
+
+      el.addEventListener("click", function () {
+        track(eventName, {
+          link_url: el.getAttribute("href") || undefined,
+        });
+
+        if (eventName === "phone_click") {
+          track("contact", { method: "phone", link_url: el.getAttribute("href") || undefined });
+        }
+        if (eventName === "consultation_cta_click") {
+          track("select_content", {
+            content_type: "cta",
+            item_id: "consultation",
+            link_url: el.getAttribute("href") || undefined,
+          });
+        }
+        if (eventName === "consultation_modal_open") {
+          track("select_content", { content_type: "modal", item_id: "consultation_form" });
+        }
+      });
+    });
+
+    var form = document.getElementById("bbncs-contact-form");
+    if (form && form.dataset.analyticsBound !== "1") {
+      form.dataset.analyticsBound = "1";
+      form.addEventListener("submit", function () {
+        track("form_submit", { form_name: "consultation" });
+        track("generate_lead", { form_name: "consultation", currency: "USD", value: 0 });
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindAnalytics);
+  } else {
+    bindAnalytics();
+  }
+})();`}
+    />
+  )
+}

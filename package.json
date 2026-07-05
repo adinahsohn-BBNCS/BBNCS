@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/copy-sitemap.js",
     "preview": "astro preview",
     "deploy": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1",
     "deploy:dry": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 -DryRun",
@@ -12,6 +12,7 @@
     "assets:extract": "powershell -ExecutionPolicy Bypass -File scripts/extract-zip-assets.ps1"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "astro": "^5.7.0"
   }
 }
