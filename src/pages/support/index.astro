@@ -1,0 +1,25 @@
+---
+/**
+ * Legacy ticket form URL — send people to IT Support with the modal open.
+ * Magic-link ticket views stay at /support/ticket/?t=…
+ */
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0;url=/it-support-services/?ticket" />
+    <link rel="canonical" href="https://bbncs.com/it-support-services/" />
+    <title>Open a support ticket · BBNCS</title>
+    <script is:inline>
+      location.replace("/it-support-services/?ticket");
+    </script>
+  </head>
+  <body>
+    <p>
+      <a href="/it-support-services/?ticket">Continue to open a support ticket</a>
+    </p>
+  </body>
+</html>

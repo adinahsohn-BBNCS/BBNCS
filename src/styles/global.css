@@ -136,6 +136,14 @@ img {
   color: #1877f2;
 }
 
+.social-link--yelp {
+  color: #d32323;
+}
+
+.social-link--google {
+  color: #4285f4;
+}
+
 .social-link--twitter {
   color: #000000;
 }
@@ -1208,6 +1216,25 @@ body.quote-modal-open {
   gap: 0.85rem;
 }
 
+#bbncs-ticket-form[hidden],
+.contact-form[hidden],
+.ticket-success[hidden],
+.ticket-form-submitting[hidden] {
+  display: none !important;
+}
+
+.ticket-modal-success #bbncs-ticket-form {
+  display: none !important;
+}
+
+.ticket-form-submitting {
+  margin: 0.5rem 0 0;
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--slate);
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1256,7 +1283,7 @@ body.quote-modal-open {
 .site-footer {
   background: var(--navy);
   color: #fff;
-  padding: 2rem 1.5rem;
+  padding: 2.35rem 1.5rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-weight: 700;
 }
@@ -1275,13 +1302,23 @@ body.quote-modal-open {
 .footer-brand {
   text-decoration: none;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0.65rem 1.15rem 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 .footer-logo {
-  height: 3.5rem;
+  height: 6rem;
   width: auto;
-  filter: brightness(0) invert(1);
-  opacity: 0.95;
+  max-width: min(16rem, 78vw);
+  object-fit: contain;
+  display: block;
+  filter: none;
+  opacity: 1;
 }
 
 .footer-line {
@@ -1795,6 +1832,58 @@ body.quote-modal-open {
   }
 }
 
+.service-ticket-panel {
+  margin: 0 0 2rem;
+}
+
+.service-ticket-panel h3 {
+  font-size: clamp(1.35rem, 2.4vw, 1.65rem);
+  letter-spacing: -0.02em;
+}
+
+.service-prose > .section-label {
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+}
+
+.service-ticket-actions {
+  margin: 1rem 0 1.25rem;
+}
+
+.service-ticket-lookup label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.service-ticket-lookup-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: stretch;
+  margin-top: 0.5rem;
+}
+
+.service-ticket-lookup-row input {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.ticket-lookup-error {
+  margin: 0.5rem 0 0;
+  color: #9b1c1c;
+  font-size: 0.95rem;
+}
+
+.service-ticket-admin {
+  margin: 1.25rem 0 0;
+  font-size: 0.95rem;
+}
+
+.service-ticket-admin-note {
+  color: var(--muted, #5c6570);
+}
+
 .service-related {
   margin-top: 2rem;
   padding-top: 1.5rem;
@@ -1929,3 +2018,572 @@ body.quote-modal-open {
   font-weight: 600;
   color: var(--navy);
 }
+
+/* Support tickets */
+
+.ticket-intro {
+  margin: 0 0 1.25rem;
+  color: var(--slate);
+  line-height: 1.55;
+}
+
+.ticket-form-hint {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--slate-muted);
+}
+
+.ticket-alert {
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ticket-alert-warn {
+  background: var(--blue-soft);
+  border: 1px solid var(--border);
+  color: var(--navy);
+}
+
+.ticket-success h2 {
+  margin: 0 0 0.75rem;
+  color: var(--navy);
+}
+
+.ticket-modal-success .quote-modal-lead {
+  display: none !important;
+}
+
+.ticket-success {
+  text-align: center;
+  padding: 0.15rem 0 0.25rem;
+}
+
+.ticket-success-number-line {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--slate);
+}
+
+.ticket-success-number-line strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.5rem;
+  color: var(--navy);
+}
+
+.ticket-success-lead {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--slate);
+}
+
+.ticket-success-cta {
+  display: block;
+  width: 100%;
+  margin: 1.15rem 0 0.85rem;
+  text-align: center;
+}
+
+.ticket-success-hint {
+  margin: 0;
+}
+
+.ticket-view-shell {
+  max-width: 720px;
+}
+
+.ticket-view-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.ticket-view-header h2 {
+  margin: 0.35rem 0 0.35rem;
+  font-size: 1.45rem;
+  color: var(--navy);
+}
+
+.ticket-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--slate);
+}
+
+.ticket-number {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.ticket-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.ticket-badge-urgency {
+  background: #fff4e5;
+  color: #9a5b00;
+}
+
+.ticket-schedule {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+  color: var(--navy);
+}
+
+.ticket-thread {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.ticket-msg {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.ticket-msg header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--slate-muted);
+}
+
+.ticket-msg header strong {
+  color: var(--navy);
+}
+
+.ticket-msg-body {
+  white-space: pre-wrap;
+  color: var(--navy);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ticket-msg--admin {
+  border-color: #c9d7f5;
+  background: #f7f9ff;
+}
+
+.ticket-msg--system {
+  background: var(--surface-alt);
+  font-style: italic;
+}
+
+.ticket-msg--internal {
+  border-style: dashed;
+  background: #fffdf5;
+}
+
+.ticket-reply-form {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.ticket-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--slate);
+  margin: 0.25rem 0 0.75rem;
+}
+
+.ticket-loading {
+  color: var(--slate);
+}
+
+.admin-tickets-page .admin-shell {
+  max-width: 1100px;
+}
+
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.admin-header h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  color: var(--navy);
+}
+
+.admin-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-auth-card {
+  max-width: 420px;
+}
+
+.admin-toolbar {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1.4fr) repeat(4, minmax(7rem, auto)) auto;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.admin-upcoming-panel {
+  margin-bottom: 1.25rem;
+}
+
+.admin-upcoming-panel h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  color: var(--navy);
+}
+
+.admin-upcoming-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-upcoming-list a {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.admin-upcoming-list a:hover {
+  text-decoration: underline;
+}
+
+.ticket-optional {
+  font-weight: 400;
+  color: var(--slate);
+  font-size: 0.85em;
+}
+
+.ticket-attachments-block {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.ticket-attachments-block h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--navy);
+}
+
+.ticket-attachments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ticket-attachment-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--blue);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ticket-attachment-link:hover {
+  text-decoration: underline;
+}
+
+.admin-toolbar input,
+.admin-toolbar select {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--navy);
+  background: var(--surface);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--navy);
+}
+
+.admin-table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--slate-muted);
+  background: var(--surface-alt);
+}
+
+.admin-table a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-table a:hover {
+  text-decoration: underline;
+}
+
+.admin-row-urgent td:nth-child(4) {
+  color: #9a5b00;
+  font-weight: 600;
+}
+
+.admin-row-emergency td:nth-child(4) {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.admin-side {
+  position: sticky;
+  top: 1rem;
+}
+
+.admin-danger-zone {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-danger-zone h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: #9b1c1c;
+}
+
+.btn-danger {
+  background: #fff;
+  color: #9b1c1c;
+  border: 1px solid #e8b4b4;
+}
+
+.btn-danger:hover {
+  background: #fef2f2;
+  color: #7f1d1d;
+  border-color: #c62828;
+}
+
+.ticket-delete-banner {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .admin-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-side {
+    position: static;
+  }
+}
+
+.admin-schedule-card {
+  margin-bottom: 1.25rem;
+  scroll-margin-top: 1rem;
+}
+
+.admin-schedule-lead {
+  margin-bottom: 0.75rem;
+}
+
+.admin-cal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-cal-range {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 0.95rem;
+}
+
+.admin-cal-grid-wrap {
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfd;
+}
+
+.admin-cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(5.5rem, 1fr));
+  min-width: 42rem;
+}
+
+.admin-cal-day-col {
+  border-right: 1px solid var(--border);
+}
+
+.admin-cal-day-col:last-child {
+  border-right: 0;
+}
+
+.admin-cal-dayhead {
+  text-align: center;
+  padding: 0.5rem 0.35rem;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.admin-cal-dayname {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--slate-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-cal-daynum {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--navy);
+}
+
+.admin-cal-daynum--today {
+  color: var(--blue);
+}
+
+.admin-cal-day-body {
+  position: relative;
+  min-height: 18rem;
+}
+
+.admin-cal-slot {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.15rem 0.35rem;
+  border: 0;
+  border-bottom: 1px solid rgba(15, 31, 61, 0.06);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-cal-slot:hover:not(.admin-cal-slot--busy) {
+  background: var(--blue-soft);
+}
+
+.admin-cal-slot--busy {
+  background: #eef1f6;
+  cursor: not-allowed;
+}
+
+.admin-cal-slot--picked {
+  background: #dbeafe;
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.admin-cal-slot-time {
+  font-size: 0.65rem;
+  color: var(--slate-muted);
+}
+
+.admin-cal-event {
+  position: absolute;
+  left: 0.2rem;
+  right: 0.2rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 4px;
+  background: rgba(37, 99, 235, 0.85);
+  color: #fff;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.admin-cal-event--allday {
+  top: 0;
+  height: 1.1rem;
+}
+
+.admin-schedule-fields {
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin-top: 0.5rem;
+}
+
+.admin-schedule-form {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 900px) {
+  .admin-cal-week {
+    min-width: 36rem;
+  }
+}
+

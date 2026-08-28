@@ -3,6 +3,7 @@ import { business, navLinks } from "../data/site";
 import SocialLinks from "../components/SocialLinks.astro";
 import NavIcon from "../components/NavIcon.astro";
 import QuoteModal from "../components/QuoteModal.astro";
+import TicketModal from "../components/TicketModal.astro";
 import JsonLd from "../components/JsonLd.astro";
 import AnalyticsEvents from "../components/AnalyticsEvents.astro";
 import GoogleTag from "../components/GoogleTag.astro";
@@ -33,6 +34,7 @@ const {
 
 const fullTitle = title === business.name ? `${business.name} | Managed IT Services` : `${title} · ${business.shortName}`;
 const logoSrc = "/images/logo.png";
+const footerLogoSrc = "/images/logo.png";
 const canonicalUrl = getCanonicalUrl(Astro.url.pathname);
 const ogImageUrl = new URL(ogImage, siteUrl).href;
 const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION;
@@ -188,7 +190,7 @@ const jsonLd = structuredData
     <footer class="site-footer">
       <div class="footer-inner">
         <a class="footer-brand" href="/">
-          <img class="footer-logo" src={logoSrc} alt={business.name} width="200" height="142" />
+          <img class="footer-logo" src={footerLogoSrc} alt={business.name} width="200" height="142" />
         </a>
         <p class="footer-line">
           <span>{business.address.full}</span>
@@ -209,6 +211,8 @@ const jsonLd = structuredData
           <span class="footer-sep" aria-hidden="true">·</span>
           <a href="/temecula-it-services/">Temecula IT services</a>
           <span class="footer-sep" aria-hidden="true">·</span>
+          <a href="/it-support-services/?ticket">Support ticket</a>
+          <span class="footer-sep" aria-hidden="true">·</span>
           <a href="/blog/">Blog</a>
           <span class="footer-sep" aria-hidden="true">·</span>
           <a href="/case-studies/">Case studies</a>
@@ -217,6 +221,7 @@ const jsonLd = structuredData
     </footer>
 
     <QuoteModal />
+    <TicketModal />
 
     <AnalyticsEvents />
 
@@ -238,7 +243,7 @@ const jsonLd = structuredData
           setMenuOpen(toggle.getAttribute("aria-expanded") !== "true");
         });
 
-        menu?.querySelectorAll("a, [data-open-quote]").forEach(function (link) {
+        menu?.querySelectorAll("a, [data-open-quote], [data-open-ticket]").forEach(function (link) {
           link.addEventListener("click", function () {
             setMenuOpen(false);
           });

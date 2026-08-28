@@ -14,10 +14,11 @@ export function getCanonicalUrl(pathname: string): string {
 export function buildLocalBusinessSchema() {
   const sameAs = [
     business.social.facebook,
+    business.social.yelp,
+    business.social.google,
     business.social.linkedin,
     business.social.instagram,
     business.social.youtube,
-    business.googleReviewsUrl,
   ].filter((url) => url && url !== "#");
 
   return {

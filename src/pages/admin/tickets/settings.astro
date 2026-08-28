@@ -1,0 +1,174 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabasePublicConfig } from "../../../lib/supabase";
+import { business } from "../../../data/site";
+
+const supabaseConfig = getSupabasePublicConfig();
+const functionsUrl = supabaseConfig.url
+  ? `${supabaseConfig.url.replace(/\/$/, "")}/functions/v1`
+  : "";
+---
+
+<BaseLayout title="Ticket settings" description="BBNCS ticket admin settings." noindex current="it-support">
+  <div class="inner-page admin-tickets-page">
+    <section class="section section-tight">
+      <div class="section-inner admin-shell">
+        <p><a class="text-link" href="/admin/tickets/">← All tickets</a></p>
+        <header class="admin-header">
+          <div>
+            <p class="hero-eyebrow">{business.shortName} admin</p>
+            <h1>Ticket settings</h1>
+          </div>
+        </header>
+
+        <div
+          class="contact-page-card office-details"
+          id="settings-root"
+          data-supabase-url={supabaseConfig.url}
+          data-supabase-key={supabaseConfig.anonKey}
+          data-supabase-configured={supabaseConfig.configured ? "1" : "0"}
+          data-functions-url={functionsUrl}
+        >
+          <h2>Google Calendar</h2>
+          <p>
+            Connect your Google account so scheduled visits and due dates can sync to your calendar.
+            Requires the <code>calendar-oauth</code> and <code>calendar-sync</code> Edge Functions
+            (see docs/tickets-setup.md).
+          </p>
+          <p class="ticket-form-hint" id="settings-msg" hidden></p>
+          <div class="admin-header-actions">
+            <button type="button" class="btn btn-primary" id="btn-connect-gcal">Connect Google Calendar</button>
+            <button type="button" class="btn btn-outline" id="btn-disconnect-gcal">Disconnect</button>
+          </div>
+          <p class="ticket-meta-line" id="gcal-status">Checking connection…</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+
+  const root = document.getElementById("settings-root");
+  const statusEl = document.getElementById("gcal-status");
+  const msg = document.getElementById("settings-msg");
+
+  async function main() {
+    if (!root || !statusEl) return;
+    const configured = root.dataset.supabaseConfigured === "1";
+    const supabaseUrl = root.dataset.supabaseUrl || "";
+    const supabaseKey = root.dataset.supabaseKey || "";
+    const functionsUrl = root.dataset.functionsUrl || "";
+
+    if (!configured || !supabaseUrl || !supabaseKey) {
+      statusEl.textContent = "Supabase is not configured.";
+      return;
+    }
+
+    const client = createClient(supabaseUrl, supabaseKey);
+    const session = (await client.auth.getSession()).data.session;
+    if (!session) {
+      window.location.href = "/admin/tickets/";
+      return;
+    }
+
+    const gcalParam = new URLSearchParams(window.location.search).get("gcal");
+    if (gcalParam && msg) {
+      msg.hidden = false;
+      if (gcalParam === "connected") {
+        msg.textContent = "Google Calendar connected successfully.";
+        history.replaceState(null, "", window.location.pathname);
+      } else if (gcalParam === "token_error") {
+        msg.textContent =
+          "Google did not return a refresh token. Disconnect any prior BBNCS access in your Google Account, then try Connect again.";
+        history.replaceState(null, "", window.location.pathname);
+      } else if (gcalParam === "error") {
+        msg.textContent = "Google authorization was cancelled or failed. Try Connect again.";
+        history.replaceState(null, "", window.location.pathname);
+      } else if (gcalParam === "email_error") {
+        msg.textContent =
+          "Google authorized but the account email could not be read. Redeploy calendar-oauth and try Connect again.";
+        history.replaceState(null, "", window.location.pathname);
+      }
+    }
+
+    const cred = await client
+      .from("calendar_credentials")
+      .select("admin_email, updated_at")
+      .maybeSingle();
+    if (cred.data) {
+      statusEl.textContent =
+        "Connected to Google Calendar as " +
+        cred.data.admin_email +
+        " (updated " +
+        new Date(cred.data.updated_at).toLocaleString() +
+        ").";
+    } else {
+      statusEl.textContent = "Not connected yet.";
+    }
+
+    document.getElementById("btn-connect-gcal")?.addEventListener("click", async () => {
+      if (!functionsUrl) {
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = "Deploy Edge Functions first (see docs/tickets-setup.md).";
+        }
+        return;
+      }
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = "Redirecting to Google…";
+      }
+      try {
+        const res = await fetch(functionsUrl + "/calendar-oauth?action=start", {
+          headers: {
+            Authorization: "Bearer " + session.access_token,
+            apikey: supabaseKey,
+          },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.url) {
+          const detail =
+            data.error ||
+            data.message ||
+            (res.status === 404
+              ? "Edge Function calendar-oauth not found — in Supabase it must be named exactly calendar-oauth (not smooth-handler)."
+              : "");
+          if (msg) {
+            msg.textContent =
+              detail || "Could not start Google OAuth. Is the Edge Function deployed?";
+          }
+          return;
+        }
+        window.location.href = data.url;
+      } catch {
+        if (msg) {
+          msg.textContent =
+            "Could not reach the calendar-oauth function. Check your connection and try again.";
+        }
+      }
+    });
+
+    document.getElementById("btn-disconnect-gcal")?.addEventListener("click", async () => {
+      const del = await client
+        .from("calendar_credentials")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000");
+      if (del.error) {
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = del.error.message;
+        }
+        return;
+      }
+      statusEl.textContent = "Not connected yet.";
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = "Disconnected.";
+      }
+    });
+  }
+
+  main();
+</script>

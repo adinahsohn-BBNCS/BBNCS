@@ -1,0 +1,735 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabasePublicConfig } from "../../../lib/supabase";
+import { business } from "../../../data/site";
+
+const supabaseConfig = getSupabasePublicConfig();
+const functionsUrl = supabaseConfig.url
+  ? `${supabaseConfig.url.replace(/\/$/, "")}/functions/v1`
+  : "";
+---
+
+<BaseLayout title="Ticket detail" description="BBNCS ticket detail." noindex current="it-support">
+  <div class="inner-page admin-tickets-page">
+    <section class="section section-tight">
+      <div
+        class="section-inner admin-shell"
+        id="ad-root"
+        data-supabase-url={supabaseConfig.url}
+        data-supabase-key={supabaseConfig.anonKey}
+        data-supabase-configured={supabaseConfig.configured ? "1" : "0"}
+        data-functions-url={functionsUrl}
+        data-site-name={business.shortName}
+      >
+        <p><a class="text-link" href="/admin/tickets/">← All tickets</a></p>
+        <p class="ticket-loading" id="ad-loading">Loading…</p>
+        <p class="ticket-alert ticket-alert-warn" id="ad-error" hidden></p>
+
+        <div id="ad-content" hidden>
+          <header class="admin-header">
+            <div>
+              <p class="ticket-meta-line">
+                <span class="ticket-number" id="ad-number"></span>
+                <span class="ticket-badge" id="ad-status-badge"></span>
+                <span class="ticket-badge ticket-badge-urgency" id="ad-urgency-badge"></span>
+              </p>
+              <h1 id="ad-subject"></h1>
+              <p class="ticket-meta-line" id="ad-client"></p>
+            </div>
+            <div class="admin-header-actions">
+              <a class="btn btn-outline btn-sm" id="ad-client-link" href="#" target="_blank" rel="noopener"
+                >Client view</a
+              >
+              <button type="button" class="btn btn-danger btn-sm" id="ad-delete-btn">Delete ticket</button>
+            </div>
+          </header>
+          <p class="ticket-form-hint ticket-delete-msg" id="ad-delete-msg" hidden></p>
+
+          <div class="contact-page-card office-details admin-schedule-card" id="ad-schedule">
+            <h2>Schedule visit</h2>
+            <p class="ticket-form-hint admin-schedule-lead">
+              <strong>Step 1:</strong> Click a white open slot on your calendar.
+              <strong>Step 2:</strong> Click <strong>Save schedule</strong>.
+              <a id="ad-cal-open" href="#" target="_blank" rel="noopener">Open full Google Calendar</a>
+            </p>
+            <p class="ticket-alert ticket-alert-warn" id="ad-schedule-hint" hidden></p>
+            <p class="ticket-form-hint" id="ad-cal-status">Loading calendar…</p>
+            <div class="admin-cal-toolbar">
+              <button type="button" class="btn btn-outline btn-sm" id="ad-cal-prev" aria-label="Previous week">←</button>
+              <span class="admin-cal-range" id="ad-cal-range"></span>
+              <button type="button" class="btn btn-outline btn-sm" id="ad-cal-next" aria-label="Next week">→</button>
+              <button type="button" class="btn btn-outline btn-sm" id="ad-cal-today">Today</button>
+            </div>
+            <div class="admin-cal-grid-wrap">
+              <div class="admin-cal-grid" id="ad-cal-grid" aria-label="Week calendar"></div>
+            </div>
+
+            <form class="contact-form admin-schedule-form" id="ad-manage-form">
+              <div class="form-row admin-schedule-fields">
+                <div>
+                  <label for="ad-status">Status</label>
+                  <select id="ad-status">
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="waiting_on_client">Waiting on Client</option>
+                    <option value="scheduled">Scheduled (visit booked)</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="ad-urgency">Urgency</label>
+                  <select id="ad-urgency">
+                    <option value="normal">Normal</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="emergency">Emergency</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="ad-sched-start">Visit start</label>
+                  <input id="ad-sched-start" type="datetime-local" />
+                </div>
+                <div>
+                  <label for="ad-sched-end">Visit end</label>
+                  <input id="ad-sched-end" type="datetime-local" />
+                </div>
+                <div>
+                  <label for="ad-due">Due date (optional)</label>
+                  <input id="ad-due" type="datetime-local" />
+                </div>
+              </div>
+              <label class="ticket-check">
+                <input type="checkbox" id="ad-sync-cal" checked /> Sync to Google Calendar on save
+              </label>
+              <p class="ticket-form-hint" id="ad-manage-msg" hidden></p>
+              <button class="btn btn-primary" type="submit">Save schedule</button>
+            </form>
+            <p class="ticket-form-hint">
+              Gray slots are busy. White slots are open. “Scheduled” in the dropdown is the ticket status after you pick a time — not a button.
+            </p>
+          </div>
+
+          <div class="admin-detail-grid">
+            <div class="contact-page-card office-details">
+              <h2>Conversation</h2>
+              <div class="ticket-thread" id="ad-thread"></div>
+              <form class="contact-form" id="ad-reply-form">
+                <div class="form-full">
+                  <label for="ad-reply">Reply to client</label>
+                  <textarea id="ad-reply" required placeholder="Visible to the client"></textarea>
+                </div>
+                <div class="form-full">
+                  <label for="ad-reply-files">Attachments</label>
+                  <input id="ad-reply-files" type="file" multiple accept="image/*,.pdf,text/plain" />
+                </div>
+                <label class="ticket-check">
+                  <input type="checkbox" id="ad-internal" /> Internal note only (hidden from client)
+                </label>
+                <button class="btn btn-primary" type="submit">Send</button>
+              </form>
+              <div class="ticket-attachments-block" id="ad-attachments" hidden>
+                <h3>Attachments</h3>
+                <ul class="ticket-attachments-list" id="ad-attachments-list"></ul>
+              </div>
+            </div>
+
+            <aside class="contact-page-card office-details admin-side">
+              <h2>Ticket info</h2>
+              <p class="ticket-form-hint" id="ad-side-schedule">No visit scheduled yet.</p>
+              <p class="ticket-form-hint">
+                Use the <a href="#ad-schedule">Schedule visit</a> section above to pick a time on your calendar.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+  import {
+    formatFileSize,
+    getAttachmentDownloadUrl,
+    notifyTicketEvent,
+    uploadTicketAttachment,
+  } from "../../../lib/ticket-api";
+
+  const STATUS = {
+    open: "Open",
+    in_progress: "In Progress",
+    waiting_on_client: "Waiting on Client",
+    scheduled: "Scheduled",
+    resolved: "Resolved",
+    closed: "Closed",
+  };
+  const URGENCY = { normal: "Normal", urgent: "Urgent", emergency: "Emergency" };
+  const ticketId = new URLSearchParams(window.location.search).get("id") || "";
+  const root = document.getElementById("ad-root");
+  const supabaseConfigured = root?.dataset.supabaseConfigured === "1";
+  const supabaseUrl = root?.dataset.supabaseUrl || "";
+  const supabaseAnonKey = root?.dataset.supabaseKey || "";
+  const functionsUrl = root?.dataset.functionsUrl || "";
+  const siteName = root?.dataset.siteName || "BBNCS";
+  let client;
+  let ticket;
+  let attachments = [];
+  let calWeekStart = startOfWeek(new Date());
+  let calEvents = [];
+  let calEmail = "";
+
+  const CAL_HOUR_START = 7;
+  const CAL_HOUR_END = 19;
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  function startOfWeek(d) {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    x.setDate(x.getDate() - x.getDay());
+    return x;
+  }
+
+  function addDays(d, n) {
+    const x = new Date(d);
+    x.setDate(x.getDate() + n);
+    return x;
+  }
+
+  function slotDate(weekStart, dayIndex, hour) {
+    const d = addDays(weekStart, dayIndex);
+    d.setHours(hour, 0, 0, 0);
+    return d;
+  }
+
+  function eventRange(ev) {
+    if (!ev.start) return null;
+    const start = new Date(ev.allDay ? ev.start + "T00:00:00" : ev.start);
+    let end = ev.end ? new Date(ev.allDay ? ev.end + "T00:00:00" : ev.end) : new Date(start.getTime() + 3600000);
+    if (ev.allDay && ev.end) end = new Date(end.getTime() - 86400000);
+    if (end <= start) end = new Date(start.getTime() + 3600000);
+    return { start, end };
+  }
+
+  function slotBusy(weekStart, dayIndex, hour) {
+    const slotStart = slotDate(weekStart, dayIndex, hour);
+    const slotEnd = new Date(slotStart.getTime() + 3600000);
+    return calEvents.some((ev) => {
+      const range = eventRange(ev);
+      if (!range) return false;
+      return range.start < slotEnd && range.end > slotStart;
+    });
+  }
+
+  function pickSlot(dayIndex, hour) {
+    const start = slotDate(calWeekStart, dayIndex, hour);
+    const end = new Date(start.getTime() + 3600000);
+    document.getElementById("ad-sched-start").value = toLocalInput(start.toISOString());
+    document.getElementById("ad-sched-end").value = toLocalInput(end.toISOString());
+    const statusEl = document.getElementById("ad-status");
+    if (statusEl && statusEl.value === "open") statusEl.value = "scheduled";
+    renderCalendarGrid();
+    document.getElementById("ad-sched-start").focus();
+  }
+
+  function fmtWeekRange(weekStart) {
+    const end = addDays(weekStart, 6);
+    const opts = { month: "short", day: "numeric" };
+    return (
+      weekStart.toLocaleDateString(undefined, opts) +
+      " – " +
+      end.toLocaleDateString(undefined, { ...opts, year: "numeric" })
+    );
+  }
+
+  function renderCalendarGrid() {
+    const grid = document.getElementById("ad-cal-grid");
+    const rangeEl = document.getElementById("ad-cal-range");
+    if (!grid || !rangeEl) return;
+    rangeEl.textContent = fmtWeekRange(calWeekStart);
+
+    const ticketStart = document.getElementById("ad-sched-start").value;
+    const ticketEnd = document.getElementById("ad-sched-end").value;
+    const selStart = ticketStart ? new Date(ticketStart) : null;
+    const selEnd = ticketEnd ? new Date(ticketEnd) : null;
+
+    grid.innerHTML = "";
+    grid.className = "admin-cal-week";
+
+    for (let day = 0; day < 7; day++) {
+      const col = document.createElement("div");
+      col.className = "admin-cal-day-col";
+      const d = addDays(calWeekStart, day);
+      const isToday = d.toDateString() === new Date().toDateString();
+
+      const head = document.createElement("div");
+      head.className = "admin-cal-dayhead";
+      head.innerHTML =
+        "<span class=\"admin-cal-dayname\">" +
+        DAY_NAMES[day] +
+        "</span><span class=\"admin-cal-daynum" +
+        (isToday ? " admin-cal-daynum--today" : "") +
+        "\">" +
+        d.getDate() +
+        "</span>";
+      col.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "admin-cal-day-body";
+
+      for (let hour = CAL_HOUR_START; hour < CAL_HOUR_END; hour++) {
+        const slotStart = slotDate(calWeekStart, day, hour);
+        const slotEnd = new Date(slotStart.getTime() + 3600000);
+        const busy = slotBusy(calWeekStart, day, hour);
+
+        const slot = document.createElement("button");
+        slot.type = "button";
+        slot.className = "admin-cal-slot";
+        const h12 = hour % 12 || 12;
+        slot.innerHTML = "<span class=\"admin-cal-slot-time\">" + h12 + (hour < 12 ? "a" : "p") + "</span>";
+        if (busy) slot.classList.add("admin-cal-slot--busy");
+        if (selStart && selEnd && selStart < slotEnd && selEnd > slotStart) {
+          slot.classList.add("admin-cal-slot--picked");
+        }
+        slot.title = busy
+          ? "Busy"
+          : "Schedule " + slotStart.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+        if (!busy) slot.addEventListener("click", () => pickSlot(day, hour));
+        body.appendChild(slot);
+      }
+
+      const dayDate = addDays(calWeekStart, day);
+      const dayEnd = addDays(dayDate, 1);
+      calEvents.forEach((ev) => {
+        const range = eventRange(ev);
+        if (!range || range.end <= dayDate || range.start >= dayEnd) return;
+        const block = document.createElement("div");
+        block.className = "admin-cal-event" + (ev.allDay ? " admin-cal-event--allday" : "");
+        block.textContent = ev.summary;
+        block.title = ev.summary;
+        if (!ev.allDay) {
+          const totalMins = (CAL_HOUR_END - CAL_HOUR_START) * 60;
+          const startMins = Math.max(0, (range.start - dayDate) / 60000 - CAL_HOUR_START * 60);
+          const endMins = Math.min(totalMins, (range.end - dayDate) / 60000 - CAL_HOUR_START * 60);
+          block.style.top = (startMins / totalMins) * 100 + "%";
+          block.style.height = Math.max(8, ((endMins - startMins) / totalMins) * 100) + "%";
+        }
+        body.appendChild(block);
+      });
+
+      col.appendChild(body);
+      grid.appendChild(col);
+    }
+  }
+
+  async function loadCalendarWeek() {
+    const statusEl = document.getElementById("ad-cal-status");
+    const openLink = document.getElementById("ad-cal-open");
+    if (!functionsUrl) {
+      if (statusEl) statusEl.textContent = "Calendar view requires Edge Functions.";
+      return;
+    }
+
+    const weekEnd = addDays(calWeekStart, 7);
+    if (statusEl) statusEl.textContent = "Loading calendar…";
+
+    const session = (await client.auth.getSession()).data.session;
+    if (!session) return;
+
+    try {
+      const res = await fetch(functionsUrl + "/calendar-events", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + session.access_token,
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          time_min: calWeekStart.toISOString(),
+          time_max: weekEnd.toISOString(),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (statusEl) statusEl.textContent = data.error || "Could not load calendar.";
+        return;
+      }
+      calEvents = data.events || [];
+      calEmail = data.calendar_email || calEmail;
+      if (openLink && calEmail) {
+        openLink.href =
+          "https://calendar.google.com/calendar/u/0/r/week/" +
+          calWeekStart.getFullYear() +
+          "/" +
+          (calWeekStart.getMonth() + 1) +
+          "/" +
+          calWeekStart.getDate();
+      }
+      if (statusEl) {
+        statusEl.textContent = calEmail
+          ? "Showing calendar for " + calEmail + ". Gray = busy, click white slots to schedule."
+          : "Week view loaded.";
+      }
+      renderCalendarGrid();
+    } catch (e) {
+      if (statusEl) statusEl.textContent = e?.message || "Could not load calendar.";
+    }
+  }
+
+  function wireCalendarNav() {
+    document.getElementById("ad-cal-prev")?.addEventListener("click", () => {
+      calWeekStart = addDays(calWeekStart, -7);
+      loadCalendarWeek();
+    });
+    document.getElementById("ad-cal-next")?.addEventListener("click", () => {
+      calWeekStart = addDays(calWeekStart, 7);
+      loadCalendarWeek();
+    });
+    document.getElementById("ad-cal-today")?.addEventListener("click", () => {
+      calWeekStart = startOfWeek(new Date());
+      loadCalendarWeek();
+    });
+    document.getElementById("ad-sched-start")?.addEventListener("change", renderCalendarGrid);
+    document.getElementById("ad-sched-end")?.addEventListener("change", renderCalendarGrid);
+  }
+
+  function toLocalInput(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return (
+      d.getFullYear() +
+      "-" +
+      pad(d.getMonth() + 1) +
+      "-" +
+      pad(d.getDate()) +
+      "T" +
+      pad(d.getHours()) +
+      ":" +
+      pad(d.getMinutes())
+    );
+  }
+
+  function fromLocalInput(v) {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  }
+
+  function fmtDate(iso) {
+    try {
+      return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    } catch {
+      return iso;
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById("ad-loading").hidden = true;
+    document.getElementById("ad-content").hidden = true;
+    const e = document.getElementById("ad-error");
+    e.hidden = false;
+    e.textContent = msg;
+  }
+
+  function renderThread(messages) {
+    const thread = document.getElementById("ad-thread");
+    thread.innerHTML = "";
+    (messages || []).forEach((m) => {
+      const el = document.createElement("article");
+      el.className =
+        "ticket-msg ticket-msg--" + m.author_type + (m.is_internal ? " ticket-msg--internal" : "");
+      el.innerHTML =
+        '<header><strong></strong><time></time></header><div class="ticket-msg-body"></div>';
+      el.querySelector("strong").textContent =
+        (m.is_internal ? "[Internal] " : "") + (m.author_name || m.author_type);
+      el.querySelector("time").textContent = fmtDate(m.created_at);
+      el.querySelector(".ticket-msg-body").textContent = m.body;
+      thread.appendChild(el);
+    });
+  }
+
+  function render(t, messages) {
+    ticket = t;
+    document.getElementById("ad-loading").hidden = true;
+    document.getElementById("ad-error").hidden = true;
+    document.getElementById("ad-content").hidden = false;
+    document.getElementById("ad-number").textContent = "T-" + t.ticket_number;
+    document.getElementById("ad-status-badge").textContent = STATUS[t.status] || t.status;
+    document.getElementById("ad-urgency-badge").textContent = URGENCY[t.urgency] || t.urgency;
+    document.getElementById("ad-subject").textContent = t.subject;
+    const c = t.clients || {};
+    document.getElementById("ad-client").textContent = [c.name, c.email, c.phone, c.company]
+      .filter(Boolean)
+      .join(" · ");
+    document.getElementById("ad-client-link").href =
+      "/support/ticket/?t=" + encodeURIComponent(t.access_token);
+    document.getElementById("ad-status").value = t.status;
+    document.getElementById("ad-urgency").value = t.urgency;
+    document.getElementById("ad-due").value = toLocalInput(t.due_at);
+    document.getElementById("ad-sched-start").value = toLocalInput(t.scheduled_start);
+    document.getElementById("ad-sched-end").value = toLocalInput(t.scheduled_end);
+    const sideSched = document.getElementById("ad-side-schedule");
+    const schedHint = document.getElementById("ad-schedule-hint");
+    if (sideSched) {
+      if (t.scheduled_start) {
+        sideSched.textContent =
+          "Visit: " +
+          fmtDate(t.scheduled_start) +
+          (t.scheduled_end ? " – " + fmtDate(t.scheduled_end) : "");
+      } else if (t.due_at) {
+        sideSched.textContent = "Due: " + fmtDate(t.due_at);
+      } else {
+        sideSched.textContent = "No visit scheduled yet — pick a time on the calendar above.";
+      }
+    }
+    if (schedHint) {
+      if (t.status === "scheduled" && !t.scheduled_start && !t.due_at) {
+        schedHint.hidden = false;
+        schedHint.textContent =
+          "This ticket is marked Scheduled but has no visit time yet. Click a white slot on the calendar above, then Save schedule.";
+      } else {
+        schedHint.hidden = true;
+      }
+    }
+    renderThread(messages);
+    renderAttachments();
+    renderCalendarGrid();
+  }
+
+  async function renderAttachments() {
+    const block = document.getElementById("ad-attachments");
+    const list = document.getElementById("ad-attachments-list");
+    if (!block || !list) return;
+    if (!attachments.length) {
+      block.hidden = true;
+      return;
+    }
+    block.hidden = false;
+    list.innerHTML = "";
+    const session = (await client.auth.getSession()).data.session;
+    for (const att of attachments) {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ticket-attachment-link";
+      btn.textContent = att.file_name + (att.size_bytes ? ` (${formatFileSize(att.size_bytes)})` : "");
+      btn.addEventListener("click", async () => {
+        try {
+          const data = await getAttachmentDownloadUrl(
+            functionsUrl,
+            supabaseAnonKey,
+            att.id,
+            {},
+            session?.access_token,
+          );
+          window.open(data.url, "_blank", "noopener,noreferrer");
+        } catch (e) {
+          alert(e?.message || "Could not open file.");
+        }
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    }
+  }
+
+  async function load() {
+    const res = await client
+      .from("tickets")
+      .select(
+        "*, clients(name, email, phone, company), ticket_messages(id, author_type, author_name, body, is_internal, created_at), ticket_attachments(id, file_name, content_type, size_bytes, message_id, created_at)",
+      )
+      .eq("id", ticketId)
+      .single();
+    if (res.error) throw res.error;
+    const messages = (res.data.ticket_messages || [])
+      .slice()
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    attachments = (res.data.ticket_attachments || [])
+      .slice()
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    render(res.data, messages);
+  }
+
+  async function removeCalendarEvent() {
+    if (!functionsUrl) return "Calendar event not removed (Edge Function URL not configured).";
+    const session = (await client.auth.getSession()).data.session;
+    if (!session) return "Calendar event not removed (not signed in).";
+    try {
+      const res = await fetch(functionsUrl + "/calendar-sync", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + session.access_token,
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ticket_id: ticketId, delete: true }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return data.error || data.message || "Could not remove calendar event (HTTP " + res.status + ").";
+      }
+      return null;
+    } catch (e) {
+      return e?.message || "Could not remove calendar event.";
+    }
+  }
+
+  function ticketHasCalendarLink(t) {
+    return Boolean(t?.google_event_id || t?.scheduled_start || t?.due_at);
+  }
+
+  async function syncCalendar(updated) {
+    if (!document.getElementById("ad-sync-cal").checked) return null;
+    if (!functionsUrl) return "Calendar sync unavailable (Edge Function URL not configured).";
+    if (!updated.scheduled_start && !updated.due_at && !updated.google_event_id) return null;
+    const session = (await client.auth.getSession()).data.session;
+    if (!session) return "Calendar sync skipped (not signed in).";
+    try {
+      const res = await fetch(functionsUrl + "/calendar-sync", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + session.access_token,
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return data.error || data.message || "Calendar sync failed (HTTP " + res.status + ").";
+      }
+      return null;
+    } catch (e) {
+      return e?.message || "Calendar sync failed.";
+    }
+  }
+
+  async function main() {
+    if (!supabaseConfigured) return showError("Supabase is not configured.");
+    if (!ticketId) return showError("Missing ticket id.");
+    client = createClient(supabaseUrl, supabaseAnonKey);
+    const session = (await client.auth.getSession()).data.session;
+    if (!session) {
+      window.location.href = "/admin/tickets/";
+      return;
+    }
+
+    await load();
+    wireCalendarNav();
+    await loadCalendarWeek();
+
+    document.getElementById("ad-reply-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const body = document.getElementById("ad-reply").value.trim();
+      const internal = document.getElementById("ad-internal").checked;
+      if (!body) return;
+      const ins = await client
+        .from("ticket_messages")
+        .insert({
+          ticket_id: ticketId,
+          author_type: "admin",
+          author_name: siteName,
+          body,
+          is_internal: internal,
+        })
+        .select("id")
+        .single();
+      if (ins.error) {
+        alert(ins.error.message);
+        return;
+      }
+      const fileInput = document.getElementById("ad-reply-files");
+      const files = fileInput?.files ? Array.from(fileInput.files) : [];
+      const session = (await client.auth.getSession()).data.session;
+      for (const file of files) {
+        try {
+          await uploadTicketAttachment(
+            functionsUrl,
+            supabaseAnonKey,
+            file,
+            { ticket_id: ticketId, message_id: ins.data?.id },
+            session?.access_token,
+          );
+        } catch (uploadErr) {
+          console.warn(uploadErr);
+        }
+      }
+      if (!internal) {
+        await client.from("tickets").update({ status: "waiting_on_client" }).eq("id", ticketId);
+        notifyTicketEvent(
+          functionsUrl,
+          supabaseAnonKey,
+          { event: "admin_reply", ticket_id: ticketId, message_body: body },
+          session?.access_token,
+        );
+      }
+      document.getElementById("ad-reply").value = "";
+      if (fileInput) fileInput.value = "";
+      document.getElementById("ad-internal").checked = false;
+      await load();
+    });
+
+    document.getElementById("ad-manage-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("ad-manage-msg");
+      msg.hidden = false;
+      msg.textContent = "Saving…";
+      const patch = {
+        status: document.getElementById("ad-status").value,
+        urgency: document.getElementById("ad-urgency").value,
+        due_at: fromLocalInput(document.getElementById("ad-due").value),
+        scheduled_start: fromLocalInput(document.getElementById("ad-sched-start").value),
+        scheduled_end: fromLocalInput(document.getElementById("ad-sched-end").value),
+      };
+      if (patch.scheduled_start && patch.status === "open") {
+        patch.status = "scheduled";
+        document.getElementById("ad-status").value = "scheduled";
+      }
+      const upd = await client.from("tickets").update(patch).eq("id", ticketId).select("*").single();
+      if (upd.error) {
+        msg.textContent = upd.error.message;
+        return;
+      }
+      const syncErr = await syncCalendar(upd.data);
+      msg.textContent = syncErr
+        ? "Saved, but " + syncErr
+        : upd.data.scheduled_start || upd.data.due_at
+          ? "Saved and synced to Google Calendar."
+          : "Saved.";
+      await load();
+      await loadCalendarWeek();
+    });
+
+    document.getElementById("ad-delete-btn")?.addEventListener("click", async () => {
+      const msg = document.getElementById("ad-delete-msg");
+      const label = ticket ? "T-" + ticket.ticket_number + " — " + ticket.subject : "this ticket";
+      const ok = window.confirm(
+        "Delete " + label + "?\n\nThis permanently removes the ticket and all messages. The client link will stop working." +
+          (ticketHasCalendarLink(ticket) ? " Any linked Google Calendar visit will also be removed." : ""),
+      );
+      if (!ok) return;
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = ticketHasCalendarLink(ticket) ? "Removing calendar visit and deleting…" : "Deleting…";
+      }
+      const calErr = await removeCalendarEvent();
+      const del = await client.from("tickets").delete().eq("id", ticketId);
+      if (del.error) {
+        if (msg) msg.textContent = del.error.message;
+        return;
+      }
+      if (calErr) {
+        window.location.href = "/admin/tickets/?deleted=1&cal=" + encodeURIComponent(calErr);
+        return;
+      }
+      window.location.href = "/admin/tickets/?deleted=1";
+    });
+  }
+
+  main().catch((err) => {
+    console.error(err);
+    showError(err.message || "Failed to load ticket.");
+  });
+</script>

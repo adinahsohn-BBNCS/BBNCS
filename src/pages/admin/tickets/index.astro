@@ -1,0 +1,426 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabasePublicConfig } from "../../../lib/supabase";
+import { business } from "../../../data/site";
+
+const supabaseConfig = getSupabasePublicConfig();
+---
+
+<BaseLayout title="Ticket admin" description="BBNCS support ticket admin." noindex current="it-support">
+  <div class="inner-page admin-tickets-page">
+    <section class="section section-tight">
+      <div
+        class="section-inner admin-shell"
+        id="admin-root"
+        data-supabase-url={supabaseConfig.url}
+        data-supabase-key={supabaseConfig.anonKey}
+        data-supabase-configured={supabaseConfig.configured ? "1" : "0"}
+        data-functions-url={supabaseConfig.url ? `${supabaseConfig.url.replace(/\/$/, "")}/functions/v1` : ""}
+      >
+        <header class="admin-header">
+          <div>
+            <p class="hero-eyebrow">{business.shortName} admin</p>
+            <h1>Support tickets</h1>
+          </div>
+          <div class="admin-header-actions" id="admin-header-actions">
+            <a class="btn btn-outline btn-sm" href="/admin/tickets/settings/">Settings</a>
+            <button type="button" class="btn btn-outline btn-sm" id="admin-signout" hidden>Sign out</button>
+          </div>
+        </header>
+
+        <div id="admin-auth" class="contact-page-card office-details admin-auth-card">
+          <h2>Admin sign in</h2>
+          <p>Enter your allowlisted email. We’ll send a magic link.</p>
+          <form class="contact-form" id="admin-login-form">
+            <div class="form-full">
+              <label for="admin-email">Email</label>
+              <input id="admin-email" type="email" required placeholder="you@bbncs.com" />
+            </div>
+            <p class="ticket-form-hint" id="admin-login-msg" hidden></p>
+            <button class="btn btn-primary" type="submit">Send magic link</button>
+          </form>
+        </div>
+
+        <div id="admin-app" hidden>
+          <div class="admin-upcoming-panel contact-page-card office-details" id="admin-upcoming" hidden>
+            <h2>Upcoming visits</h2>
+            <ul class="admin-upcoming-list" id="admin-upcoming-list"></ul>
+          </div>
+
+          <div class="admin-toolbar">
+            <input type="search" id="admin-search" placeholder="Search subject, client, T-number…" />
+            <select id="admin-filter-status">
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="waiting_on_client">Waiting on Client</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+            <select id="admin-filter-urgency">
+              <option value="">All urgency</option>
+              <option value="emergency">Emergency</option>
+              <option value="urgent">Urgent</option>
+              <option value="normal">Normal</option>
+            </select>
+            <select id="admin-filter-preset">
+              <option value="">All tickets</option>
+              <option value="active">Active (not closed)</option>
+              <option value="scheduled_today">Scheduled today</option>
+              <option value="scheduled_week">Scheduled this week</option>
+            </select>
+            <select id="admin-sort">
+              <option value="updated_desc">Updated (newest)</option>
+              <option value="updated_asc">Updated (oldest)</option>
+              <option value="urgency_desc">Urgency (high first)</option>
+              <option value="scheduled_asc">Visit time (soonest)</option>
+            </select>
+            <button type="button" class="btn btn-outline btn-sm" id="admin-refresh">Refresh</button>
+          </div>
+          <p class="ticket-form-hint" id="admin-list-error" hidden></p>
+          <p class="ticket-form-hint ticket-delete-banner" id="admin-deleted-banner" hidden></p>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="admin-table">
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Subject</th>
+                  <th>Client</th>
+                  <th>Urgency</th>
+                  <th>Status</th>
+                  <th>Visit</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody id="admin-tbody"></tbody>
+            </table>
+          </div>
+          <p class="ticket-form-hint" id="admin-empty" hidden>No tickets yet.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+  const STATUS: Record<string, string> = {
+    open: "Open",
+    in_progress: "In Progress",
+    waiting_on_client: "Waiting on Client",
+    scheduled: "Scheduled",
+    resolved: "Resolved",
+    closed: "Closed",
+  };
+  const URGENCY: Record<string, string> = {
+    normal: "Normal",
+    urgent: "Urgent",
+    emergency: "Emergency",
+  };
+  const URGENCY_RANK: Record<string, number> = { emergency: 3, urgent: 2, normal: 1 };
+
+  const root = document.getElementById("admin-root");
+  const authCard = document.getElementById("admin-auth");
+  const app = document.getElementById("admin-app");
+  const signoutBtn = document.getElementById("admin-signout");
+  const tbody = document.getElementById("admin-tbody");
+  const listErr = document.getElementById("admin-list-error");
+  const empty = document.getElementById("admin-empty");
+  let allRows: Array<Record<string, unknown>> = [];
+  let client: SupabaseClient;
+
+  function fmtDate(iso: string) {
+    try {
+      return new Date(iso).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+    } catch {
+      return iso;
+    }
+  }
+
+  function startOfDay(d = new Date()) {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+
+  function endOfDay(d = new Date()) {
+    const x = new Date(d);
+    x.setHours(23, 59, 59, 999);
+    return x;
+  }
+
+  function endOfWeek(d = new Date()) {
+    const x = startOfDay(d);
+    const day = x.getDay();
+    x.setDate(x.getDate() + (6 - day));
+    x.setHours(23, 59, 59, 999);
+    return x;
+  }
+
+  function filterRows() {
+    const q = (
+      (document.getElementById("admin-search") as HTMLInputElement)?.value || ""
+    )
+      .toLowerCase()
+      .trim();
+    const st = (document.getElementById("admin-filter-status") as HTMLSelectElement)?.value;
+    const urg = (document.getElementById("admin-filter-urgency") as HTMLSelectElement)?.value;
+    const preset = (document.getElementById("admin-filter-preset") as HTMLSelectElement)?.value;
+    const todayStart = startOfDay();
+    const todayEnd = endOfDay();
+    const weekEnd = endOfWeek();
+
+    return allRows.filter((r) => {
+      if (st && r.status !== st) return false;
+      if (urg && r.urgency !== urg) return false;
+      if (preset === "active" && (r.status === "closed" || r.status === "resolved")) return false;
+      if (preset === "scheduled_today") {
+        if (!r.scheduled_start) return false;
+        const visit = new Date(String(r.scheduled_start));
+        if (visit < todayStart || visit > todayEnd) return false;
+      }
+      if (preset === "scheduled_week") {
+        if (!r.scheduled_start) return false;
+        const visit = new Date(String(r.scheduled_start));
+        if (visit < todayStart || visit > weekEnd) return false;
+      }
+      if (!q) return true;
+      const c = (r.clients || {}) as Record<string, string>;
+      const hay = (
+        "t-" +
+        r.ticket_number +
+        " " +
+        (r.subject || "") +
+        " " +
+        (c.name || "") +
+        " " +
+        (c.email || "") +
+        " " +
+        (c.company || "")
+      ).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function sortRows(rows: Array<Record<string, unknown>>) {
+    const mode = (document.getElementById("admin-sort") as HTMLSelectElement)?.value || "updated_desc";
+    const copy = rows.slice();
+    copy.sort((a, b) => {
+      if (mode === "updated_asc") {
+        return new Date(String(a.updated_at)).getTime() - new Date(String(b.updated_at)).getTime();
+      }
+      if (mode === "urgency_desc") {
+        const diff = (URGENCY_RANK[String(b.urgency)] || 0) - (URGENCY_RANK[String(a.urgency)] || 0);
+        if (diff !== 0) return diff;
+        return new Date(String(b.updated_at)).getTime() - new Date(String(a.updated_at)).getTime();
+      }
+      if (mode === "scheduled_asc") {
+        const aT = a.scheduled_start ? new Date(String(a.scheduled_start)).getTime() : Infinity;
+        const bT = b.scheduled_start ? new Date(String(b.scheduled_start)).getTime() : Infinity;
+        if (aT !== bT) return aT - bT;
+        return new Date(String(b.updated_at)).getTime() - new Date(String(a.updated_at)).getTime();
+      }
+      return new Date(String(b.updated_at)).getTime() - new Date(String(a.updated_at)).getTime();
+    });
+    return copy;
+  }
+
+  function renderUpcoming() {
+    const panel = document.getElementById("admin-upcoming");
+    const list = document.getElementById("admin-upcoming-list");
+    if (!panel || !list) return;
+    const now = Date.now();
+    const weekEnd = endOfWeek().getTime();
+    const upcoming = allRows
+      .filter((r) => r.scheduled_start)
+      .map((r) => ({ ...r, visitTime: new Date(String(r.scheduled_start)).getTime() }))
+      .filter((r) => r.visitTime >= now - 3600000 && r.visitTime <= weekEnd)
+      .sort((a, b) => a.visitTime - b.visitTime)
+      .slice(0, 8);
+
+    if (!upcoming.length) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+    list.innerHTML = "";
+    upcoming.forEach((r) => {
+      const li = document.createElement("li");
+      const c = (r.clients || {}) as Record<string, string>;
+      const a = document.createElement("a");
+      a.href = "/admin/tickets/detail/?id=" + encodeURIComponent(String(r.id));
+      a.textContent =
+        fmtDate(String(r.scheduled_start)) +
+        " · T-" +
+        r.ticket_number +
+        " · " +
+        (c.company || c.name || "Client") +
+        " — " +
+        (r.subject || "");
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
+
+  function renderTable() {
+    if (!tbody || !empty) return;
+    const rows = sortRows(filterRows());
+    tbody.innerHTML = "";
+    empty.hidden = rows.length > 0;
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+      const cells = tr.children;
+      const a = document.createElement("a");
+      a.href = "/admin/tickets/detail/?id=" + encodeURIComponent(String(r.id));
+      a.textContent = "T-" + r.ticket_number;
+      cells[0].appendChild(a);
+      cells[1].textContent = String(r.subject || "");
+      const c = (r.clients || {}) as Record<string, string>;
+      cells[2].textContent = c.company || c.name || "—";
+      cells[3].textContent = URGENCY[String(r.urgency)] || String(r.urgency);
+      cells[4].textContent = STATUS[String(r.status)] || String(r.status);
+      cells[5].textContent = r.scheduled_start ? fmtDate(String(r.scheduled_start)) : "—";
+      cells[6].textContent = fmtDate(String(r.updated_at));
+      if (r.urgency === "emergency") tr.classList.add("admin-row-emergency");
+      else if (r.urgency === "urgent") tr.classList.add("admin-row-urgent");
+      tbody.appendChild(tr);
+    });
+    renderUpcoming();
+  }
+
+  async function ensureAdmin(session: { user: { email?: string; id: string } }) {
+    const email = session.user.email;
+    if (!email) throw new Error("No email on session.");
+    const check = await client
+      .from("admin_users")
+      .select("id, email")
+      .ilike("email", email)
+      .maybeSingle();
+    if (check.error) throw check.error;
+    if (!check.data) {
+      await client.auth.signOut();
+      throw new Error("This email is not on the admin allowlist.");
+    }
+    if (!(check.data as { user_id?: string }).user_id) {
+      await client.from("admin_users").update({ user_id: session.user.id }).eq("id", check.data.id);
+    }
+  }
+
+  async function loadTickets() {
+    if (!listErr) return;
+    listErr.hidden = true;
+    const res = await client
+      .from("tickets")
+      .select(
+        "id, ticket_number, subject, urgency, status, updated_at, scheduled_start, scheduled_end, clients(name, email, company)",
+      )
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    if (res.error) {
+      listErr.hidden = false;
+      listErr.textContent = res.error.message;
+      return;
+    }
+    allRows = (res.data || []) as Array<Record<string, unknown>>;
+    renderTable();
+  }
+
+  async function showApp(session: { user: { email?: string; id: string } }) {
+    await ensureAdmin(session);
+    if (authCard) authCard.hidden = true;
+    if (app) app.hidden = false;
+    if (signoutBtn) signoutBtn.hidden = false;
+    await loadTickets();
+  }
+
+  function showLogin(msg?: string) {
+    if (authCard) authCard.hidden = false;
+    if (app) app.hidden = true;
+    if (signoutBtn) signoutBtn.hidden = true;
+    const m = document.getElementById("admin-login-msg");
+    if (msg && m) {
+      m.hidden = false;
+      m.textContent = msg;
+    }
+  }
+
+  async function main() {
+    if (!root) return;
+    const configured = root.dataset.supabaseConfigured === "1";
+    const supabaseUrl = root.dataset.supabaseUrl || "";
+    const supabaseKey = root.dataset.supabaseKey || "";
+    if (!configured || !supabaseUrl || !supabaseKey) {
+      showLogin("Supabase is not configured. Rebuild with PUBLIC_SUPABASE_* env vars.");
+      return;
+    }
+
+    client = createClient(supabaseUrl, supabaseKey);
+
+    document.getElementById("admin-login-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = ((document.getElementById("admin-email") as HTMLInputElement)?.value || "").trim();
+      const m = document.getElementById("admin-login-msg");
+      if (m) {
+        m.hidden = false;
+        m.textContent = "Sending…";
+      }
+      const res = await client.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + "/admin/tickets/" },
+      });
+      if (m) {
+        m.textContent = res.error ? res.error.message : "Check your email for the magic link.";
+      }
+    });
+
+    signoutBtn?.addEventListener("click", async () => {
+      await client.auth.signOut();
+      showLogin("Signed out.");
+    });
+
+    document.getElementById("admin-search")?.addEventListener("input", renderTable);
+    document.getElementById("admin-filter-status")?.addEventListener("change", renderTable);
+    document.getElementById("admin-filter-urgency")?.addEventListener("change", renderTable);
+    document.getElementById("admin-filter-preset")?.addEventListener("change", renderTable);
+    document.getElementById("admin-sort")?.addEventListener("change", renderTable);
+    document.getElementById("admin-refresh")?.addEventListener("click", () => loadTickets());
+
+    if (new URLSearchParams(window.location.search).get("deleted") === "1") {
+      const banner = document.getElementById("admin-deleted-banner");
+      const calWarn = new URLSearchParams(window.location.search).get("cal");
+      if (banner) {
+        banner.hidden = false;
+        banner.textContent = calWarn
+          ? "Ticket deleted, but calendar event could not be removed: " + calWarn
+          : "Ticket deleted.";
+      }
+      history.replaceState(null, "", window.location.pathname);
+    }
+
+    client.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        try {
+          await showApp(session);
+        } catch (err) {
+          showLogin(err instanceof Error ? err.message : "Not authorized.");
+        }
+      } else if (_event === "SIGNED_OUT") {
+        showLogin();
+      }
+    });
+
+    const existing = await client.auth.getSession();
+    if (existing.data.session) {
+      try {
+        await showApp(existing.data.session);
+      } catch (err) {
+        showLogin(err instanceof Error ? err.message : "Not authorized.");
+      }
+    }
+  }
+
+  main();
+</script>

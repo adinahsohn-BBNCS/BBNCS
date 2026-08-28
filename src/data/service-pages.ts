@@ -5,7 +5,7 @@ export type ServiceSection = {
 
 export type ServicePage = {
   slug: string;
-  navKey: "managed-it" | "backup" | "support";
+  navKey: "managed-it" | "backup" | "it-support";
   title: string;
   metaDescription: string;
   heroTitle: string;
@@ -146,7 +146,7 @@ export const servicePages: ServicePage[] = [
   },
   {
     slug: "it-support-services",
-    navKey: "support",
+    navKey: "it-support",
     title: "IT Support Services",
     metaDescription:
       "BBNCS IT support for Temecula businesses — rapid response, proactive monitoring, remote and on-site help, transparent pricing.",

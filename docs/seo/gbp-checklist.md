@@ -57,9 +57,9 @@ Rotate topics:
 
 **Script:**
 
-> Hi [Name], thanks for trusting BBNCS with your IT. If you have a moment, a quick Google review helps other Temecula businesses find us. [link to Google reviews]
+> Hi [Name], thanks for trusting BBNCS with your IT. If you have a moment, a quick review helps other Temecula businesses find us: https://bbncs.com/review/
 
-**Review link:** Use the URL in `src/data/site.ts` → `googleReviewsUrl`
+**Review link:** Share **`https://bbncs.com/review/`** with clients (branded page with Google + Yelp buttons). Direct URLs are in `src/data/site.ts` → `googleReviewWriteUrl` and `yelpReviewWriteUrl`.
 
 **Reply to every review** within 48 hours. Mention Temecula lightly, stay professional, never argue publicly.
 

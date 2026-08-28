@@ -1,0 +1,326 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { getSupabasePublicConfig } from "../../lib/supabase";
+import { business } from "../../data/site";
+
+const supabaseConfig = getSupabasePublicConfig();
+const functionsUrl = supabaseConfig.url
+  ? `${supabaseConfig.url.replace(/\/$/, "")}/functions/v1`
+  : "";
+---
+
+<BaseLayout
+  title="Your support ticket"
+  description="View and reply to your BBNCS support ticket."
+  current="it-support"
+  noindex
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={`${business.shortName} · Support`}
+      title="Your ticket"
+      lead="Use the private link from your confirmation email or submission page to view status and reply."
+      compact
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner ticket-view-shell">
+        <div
+          class="contact-page-card office-details ticket-view-card"
+          id="ticket-view-root"
+          data-supabase-url={supabaseConfig.url}
+          data-supabase-key={supabaseConfig.anonKey}
+          data-supabase-configured={supabaseConfig.configured ? "1" : "0"}
+          data-functions-url={functionsUrl}
+        >
+          <p class="ticket-loading" id="ticket-loading">Loading ticket…</p>
+          <p class="ticket-alert ticket-alert-warn" id="ticket-view-error" hidden></p>
+
+          <div id="ticket-view-content" hidden>
+            <div class="ticket-view-header">
+              <div>
+                <p class="ticket-meta-line">
+                  <span class="ticket-number" id="tv-number"></span>
+                  <span class="ticket-badge" id="tv-status"></span>
+                  <span class="ticket-badge ticket-badge-urgency" id="tv-urgency"></span>
+                </p>
+                <h2 id="tv-subject"></h2>
+                <p class="ticket-meta-line" id="tv-meta"></p>
+              </div>
+              <a class="btn btn-outline btn-sm" href="/it-support-services/?ticket">Submit another ticket</a>
+            </div>
+
+            <div class="ticket-schedule" id="tv-schedule" hidden>
+              <strong>Scheduled visit:</strong> <span id="tv-schedule-text"></span>
+            </div>
+
+            <div class="ticket-thread" id="tv-thread" aria-live="polite"></div>
+
+            <div class="ticket-attachments-block" id="tv-attachments" hidden>
+              <h3>Attachments</h3>
+              <ul class="ticket-attachments-list" id="tv-attachments-list"></ul>
+            </div>
+
+            <form class="contact-form ticket-reply-form" id="tv-reply-form">
+              <div class="form-full">
+                <label for="tv-reply">Add an update</label>
+                <textarea id="tv-reply" name="body" required placeholder="Reply or add more details…"></textarea>
+              </div>
+              <div class="form-full">
+                <label for="tv-reply-files">Attachments</label>
+                <input id="tv-reply-files" type="file" multiple accept="image/*,.pdf,text/plain" />
+              </div>
+              <p class="ticket-form-hint" id="tv-reply-error" hidden></p>
+              <button class="btn btn-primary" type="submit" id="tv-reply-btn">Send reply</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+  import {
+    formatFileSize,
+    getAttachmentDownloadUrl,
+    notifyTicketEvent,
+    uploadTicketAttachment,
+  } from "../../lib/ticket-api";
+
+  const STATUS = {
+    open: "Open",
+    in_progress: "In Progress",
+    waiting_on_client: "Waiting on Client",
+    scheduled: "Scheduled",
+    resolved: "Resolved",
+    closed: "Closed",
+  };
+  const URGENCY = { normal: "Normal", urgent: "Urgent", emergency: "Emergency" };
+  const CATEGORY = {
+    managed_it: "Managed IT",
+    backup: "Backup",
+    it_support: "IT Support",
+    other: "Other",
+  };
+
+  const root = document.getElementById("ticket-view-root");
+  const loading = document.getElementById("ticket-loading");
+  const errEl = document.getElementById("ticket-view-error");
+  const content = document.getElementById("ticket-view-content");
+  const token = new URLSearchParams(window.location.search).get("t") || "";
+
+  function showError(msg: string) {
+    if (loading) loading.hidden = true;
+    if (content) content.hidden = true;
+    if (errEl) {
+      errEl.hidden = false;
+      errEl.textContent = msg;
+    }
+  }
+
+  function fmtDate(iso: string) {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return iso;
+    }
+  }
+
+  function renderMessages(messages: Array<Record<string, string>>) {
+    const thread = document.getElementById("tv-thread");
+    if (!thread) return;
+    thread.innerHTML = "";
+    (messages || []).forEach((m) => {
+      const el = document.createElement("article");
+      el.className = "ticket-msg ticket-msg--" + m.author_type;
+      el.innerHTML =
+        '<header><strong></strong><time></time></header><div class="ticket-msg-body"></div>';
+      const strong = el.querySelector("strong");
+      const time = el.querySelector("time");
+      const body = el.querySelector(".ticket-msg-body");
+      if (strong) {
+        strong.textContent =
+          m.author_name || (m.author_type === "admin" ? "BBNCS" : "Client");
+      }
+      if (time) time.textContent = fmtDate(m.created_at);
+      if (body) body.textContent = m.body;
+      thread.appendChild(el);
+    });
+  }
+
+  function renderAttachments(items: Array<Record<string, unknown>>, functionsUrl: string, supabaseKey: string) {
+    const block = document.getElementById("tv-attachments");
+    const list = document.getElementById("tv-attachments-list");
+    if (!block || !list) return;
+    const attachments = items || [];
+    if (!attachments.length) {
+      block.hidden = true;
+      return;
+    }
+    block.hidden = false;
+    list.innerHTML = "";
+    attachments.forEach((att) => {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ticket-attachment-link";
+      const size = att.size_bytes ? ` (${formatFileSize(Number(att.size_bytes))})` : "";
+      btn.textContent = String(att.file_name || "File") + size;
+      btn.addEventListener("click", async () => {
+        try {
+          const data = await getAttachmentDownloadUrl(functionsUrl, supabaseKey, String(att.id), {
+            token,
+          });
+          window.open(data.url, "_blank", "noopener,noreferrer");
+        } catch (e) {
+          alert(e instanceof Error ? e.message : "Could not open file.");
+        }
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  }
+
+  function renderTicket(data: Record<string, unknown>, functionsUrl: string, supabaseKey: string) {
+    if (loading) loading.hidden = true;
+    if (errEl) errEl.hidden = true;
+    if (content) content.hidden = false;
+
+    const num = document.getElementById("tv-number");
+    const status = document.getElementById("tv-status");
+    const urgency = document.getElementById("tv-urgency");
+    const subject = document.getElementById("tv-subject");
+    const meta = document.getElementById("tv-meta");
+    if (num) num.textContent = "T-" + data.ticket_number;
+    if (status) status.textContent = STATUS[data.status as keyof typeof STATUS] || String(data.status);
+    if (urgency) {
+      urgency.textContent = URGENCY[data.urgency as keyof typeof URGENCY] || String(data.urgency);
+    }
+    if (subject) subject.textContent = String(data.subject || "");
+    if (meta) {
+      meta.textContent =
+        (CATEGORY[data.category as keyof typeof CATEGORY] || String(data.category)) +
+        " · Opened " +
+        fmtDate(String(data.created_at || ""));
+    }
+
+    const sched = document.getElementById("tv-schedule");
+    const schedText = document.getElementById("tv-schedule-text");
+    if (data.scheduled_start && sched && schedText) {
+      sched.hidden = false;
+      schedText.textContent =
+        fmtDate(String(data.scheduled_start)) +
+        (data.scheduled_end ? " – " + fmtDate(String(data.scheduled_end)) : "");
+    }
+
+    renderMessages((data.messages as Array<Record<string, string>>) || []);
+    renderAttachments((data.attachments as Array<Record<string, unknown>>) || [], functionsUrl, supabaseKey);
+
+    const replyForm = document.getElementById("tv-reply-form");
+    if (replyForm && data.status === "closed") {
+      replyForm.hidden = true;
+    }
+  }
+
+  async function main() {
+    if (!root) return;
+    const configured = root.dataset.supabaseConfigured === "1";
+    const supabaseUrl = root.dataset.supabaseUrl || "";
+    const functionsUrl = root.dataset.functionsUrl || "";
+    const supabaseKey = root.dataset.supabaseKey || "";
+
+    if (!configured || !supabaseUrl || !supabaseKey) {
+      showError("Support tickets are not configured yet. Please call 951-506-4755.");
+      return;
+    }
+    if (!token || token.length < 16) {
+      showError(
+        "Missing or invalid ticket link. Open the link from your confirmation email, or submit a new ticket.",
+      );
+      return;
+    }
+
+    try {
+      const client = createClient(supabaseUrl, supabaseKey);
+      const result = await client.rpc("get_ticket_by_token", { p_token: token });
+      if (result.error) throw result.error;
+      renderTicket(result.data as Record<string, unknown>, functionsUrl, supabaseKey);
+
+      const replyForm = document.getElementById("tv-reply-form") as HTMLFormElement | null;
+      const replyBtn = document.getElementById("tv-reply-btn") as HTMLButtonElement | null;
+      const replyErr = document.getElementById("tv-reply-error");
+      replyForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const body = String(
+          (document.getElementById("tv-reply") as HTMLTextAreaElement)?.value || "",
+        ).trim();
+        if (!body) return;
+        if (replyErr) replyErr.hidden = true;
+        if (replyBtn) {
+          replyBtn.disabled = true;
+          replyBtn.textContent = "Sending…";
+        }
+        try {
+          const reply = await client.rpc("reply_ticket_by_token", {
+            p_token: token,
+            p_body: body,
+          });
+          if (reply.error) throw reply.error;
+
+          const fileInput = document.getElementById("tv-reply-files") as HTMLInputElement | null;
+          const files = fileInput?.files ? Array.from(fileInput.files) : [];
+          for (const file of files) {
+            try {
+              await uploadTicketAttachment(functionsUrl, supabaseKey, file, { token });
+            } catch (uploadErr) {
+              console.warn(uploadErr);
+            }
+          }
+
+          notifyTicketEvent(functionsUrl, supabaseKey, {
+            event: "client_reply",
+            ticket_id: (result.data as Record<string, string>).id,
+            access_token: token,
+            message_body: body,
+          });
+
+          const replyInput = document.getElementById("tv-reply") as HTMLTextAreaElement;
+          if (replyInput) replyInput.value = "";
+          if (fileInput) fileInput.value = "";
+          const refreshed = await client.rpc("get_ticket_by_token", { p_token: token });
+          if (refreshed.error) throw refreshed.error;
+          renderTicket(refreshed.data as Record<string, unknown>, functionsUrl, supabaseKey);
+        } catch (err: unknown) {
+          if (replyErr) {
+            replyErr.hidden = false;
+            replyErr.textContent =
+              err instanceof Error ? err.message : "Could not send reply.";
+          }
+        } finally {
+          if (replyBtn) {
+            replyBtn.disabled = false;
+            replyBtn.textContent = "Send reply";
+          }
+        }
+      });
+    } catch (err: unknown) {
+      console.error(err);
+      const message =
+        err instanceof Error && err.message === "Failed to fetch"
+          ? "Could not reach the ticket database. Check your connection and try again."
+          : err instanceof Error
+            ? err.message
+            : "Could not load this ticket.";
+      showError(message);
+    }
+  }
+
+  main();
+</script>

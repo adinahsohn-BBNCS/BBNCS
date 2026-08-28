@@ -20,7 +20,7 @@ Short name **BBNCS** is fine in marketing copy, but directory listings should us
 | Platform | Action |
 |----------|--------|
 | [Google Business Profile](https://business.google.com) | Claim, verify, optimize — see `gbp-checklist.md` |
-| [Bing Places](https://www.bingplaces.com) | Claim listing, match NAP |
+| [Bing Places](https://www.bingplaces.com) | Synced from Google — July 10, 2026; photos uploaded; pending publish |
 | [Apple Business Connect](https://businessconnect.apple.com) | Claim listing |
 | [Yelp](https://biz.yelp.com) | Claim or create |
 | [BBB](https://www.bbb.org) | Verify accreditation if applicable |
@@ -53,3 +53,14 @@ Old listings may still reference:
 - Accountant-home or friends pages (now redirected on bbncs.com)
 
 Update website URL to `https://bbncs.com` on every profile you control.
+
+## Follow-up: verify Bing listing live — Friday, July 17, 2026
+
+Bing synced from Google on July 10, 2026. Publishing can take several days after photos are added.
+
+- [ ] Search Bing or Bing Maps: `Bits Bytes Nibbles Temecula`
+- [ ] Listing is live (not “pending” or unclaimed)
+- [ ] NAP matches canonical NAP above (Suite **G**, **951-506-4755**)
+- [ ] Website shows **https://bbncs.com**
+- [ ] Uploaded photos appear on the listing
+- [ ] If still not live after 7 days, check [bingplaces.com](https://www.bingplaces.com) dashboard for verification or rejection notes

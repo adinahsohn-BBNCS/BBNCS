@@ -1,0 +1,234 @@
+---
+/**
+ * Public support ticket form. Submits via Supabase RPC create_support_ticket.
+ * Requires PUBLIC_SUPABASE_URL + PUBLIC_SUPABASE_ANON_KEY.
+ */
+import { getSupabasePublicConfig } from "../lib/supabase";
+
+const supabaseConfig = getSupabasePublicConfig();
+---
+
+{
+  !supabaseConfig.configured ? (
+    <div class="ticket-alert ticket-alert-warn" role="status">
+      <p>
+        Ticket submission is being set up. For urgent help, call{" "}
+        <a href="tel:+19515064755">951-506-4755</a> or email{" "}
+        <a href="mailto:sales@bbncs.com">sales@bbncs.com</a>.
+      </p>
+    </div>
+  ) : null
+}
+
+<div class="ticket-success" id="ticket-success" hidden>
+  <p class="ticket-success-number-line">
+    Your ticket number is <strong id="ticket-success-number"></strong>
+  </p>
+  <p class="ticket-success-lead">We emailed you a link to track this ticket. You can also use the button below.</p>
+  <a class="btn btn-primary ticket-success-cta" id="ticket-success-link" href="#">View your ticket</a>
+  <p class="ticket-form-hint ticket-success-hint">
+    For emergencies, call <a href="tel:+19515064755">951-506-4755</a> anytime.
+  </p>
+</div>
+
+<p class="ticket-form-submitting" id="ticket-form-submitting" hidden aria-live="polite">Submitting your ticket…</p>
+
+<form
+  class="contact-form ticket-form"
+  id="bbncs-ticket-form"
+  data-supabase-url={supabaseConfig.url}
+  data-supabase-key={supabaseConfig.anonKey}
+  data-supabase-configured={supabaseConfig.configured ? "1" : "0"}
+  data-functions-url={supabaseConfig.url ? `${supabaseConfig.url.replace(/\/$/, "")}/functions/v1` : ""}
+>
+  <div class="form-row">
+    <div>
+      <label for="ticket-name">Name *</label>
+      <input id="ticket-name" name="name" type="text" required placeholder="Your name" autocomplete="name" />
+    </div>
+    <div>
+      <label for="ticket-phone">Phone *</label>
+      <input id="ticket-phone" name="phone" type="tel" required placeholder="(951) 555-0100" autocomplete="tel" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div>
+      <label for="ticket-email">Email *</label>
+      <input id="ticket-email" name="email" type="email" required placeholder="you@company.com" autocomplete="email" />
+    </div>
+    <div>
+      <label for="ticket-company">Company</label>
+      <input id="ticket-company" name="company" type="text" placeholder="Business name" autocomplete="organization" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div>
+      <label for="ticket-category">Category *</label>
+      <select id="ticket-category" name="category" required>
+        <option value="it_support">IT Support</option>
+        <option value="managed_it">Managed IT</option>
+        <option value="backup">Backup</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label for="ticket-urgency">Urgency *</label>
+      <select id="ticket-urgency" name="urgency" required>
+        <option value="normal">Normal</option>
+        <option value="urgent">Urgent</option>
+        <option value="emergency">Emergency — call 951-506-4755 if systems are down</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-full">
+    <label for="ticket-subject">Subject *</label>
+    <input id="ticket-subject" name="subject" type="text" required placeholder="Short summary of the issue" />
+  </div>
+  <div class="form-full">
+    <label for="ticket-description">Describe the issue *</label>
+    <textarea
+      id="ticket-description"
+      name="description"
+      required
+      placeholder="What happened, which devices/users are affected, and anything you've already tried."
+    ></textarea>
+  </div>
+  <div class="form-full">
+    <label for="ticket-files">Attachments <span class="ticket-optional">(optional)</span></label>
+    <input
+      id="ticket-files"
+      name="files"
+      type="file"
+      multiple
+      accept="image/*,.pdf,text/plain"
+    />
+    <p class="ticket-form-hint">Screenshots or PDFs, up to 10 MB each.</p>
+  </div>
+  <p class="ticket-form-hint" id="ticket-form-error" hidden></p>
+  <button class="btn btn-primary" type="submit" id="ticket-submit-btn">Submit ticket</button>
+</form>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+  import { notifyTicketEvent, ticketFunctionsBase, uploadTicketAttachment } from "../lib/ticket-api";
+
+  const form = document.getElementById("bbncs-ticket-form");
+  if (form) {
+    const errEl = document.getElementById("ticket-form-error");
+    const success = document.getElementById("ticket-success");
+    const submittingEl = document.getElementById("ticket-form-submitting");
+    const submitBtn = document.getElementById("ticket-submit-btn");
+    const configured = form.dataset.supabaseConfigured === "1";
+    const supabaseUrl = form.dataset.supabaseUrl || "";
+    const supabaseKey = form.dataset.supabaseKey || "";
+    const functionsUrl = form.dataset.functionsUrl || ticketFunctionsBase(supabaseUrl);
+
+    function showError(msg) {
+      if (!errEl) return;
+      errEl.hidden = false;
+      errEl.textContent = msg;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (errEl) errEl.hidden = true;
+
+      if (!configured || !supabaseUrl || !supabaseKey) {
+        showError("Ticketing is not configured yet. Please call 951-506-4755.");
+        return;
+      }
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const fd = new FormData(form);
+      const payload = {
+        p_name: String(fd.get("name") || "").trim(),
+        p_email: String(fd.get("email") || "").trim(),
+        p_company: String(fd.get("company") || "").trim() || null,
+        p_phone: String(fd.get("phone") || "").trim() || null,
+        p_category: String(fd.get("category") || "it_support"),
+        p_urgency: String(fd.get("urgency") || "normal"),
+        p_subject: String(fd.get("subject") || "").trim(),
+        p_description: String(fd.get("description") || "").trim(),
+      };
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+      }
+      form.hidden = true;
+      form.setAttribute("aria-hidden", "true");
+      if (submittingEl) submittingEl.hidden = false;
+
+      try {
+        const client = createClient(supabaseUrl, supabaseKey);
+        const result = await client.rpc("create_support_ticket", payload);
+        if (result.error) throw result.error;
+
+        const data = result.data;
+
+        const fileInput = document.getElementById("ticket-files");
+        const files = fileInput?.files ? Array.from(fileInput.files) : [];
+        for (const file of files) {
+          try {
+            await uploadTicketAttachment(functionsUrl, supabaseKey, file, {
+              token: data.access_token,
+            });
+          } catch (uploadErr) {
+            console.warn("Attachment upload failed:", uploadErr);
+          }
+        }
+
+        notifyTicketEvent(functionsUrl, supabaseKey, {
+          event: "ticket_created",
+          ticket_id: data.id,
+          access_token: data.access_token,
+        });
+
+        const dialog = form.closest(".quote-modal-dialog");
+        const modalTitle = document.getElementById("ticket-modal-title");
+        const modalLead = dialog?.querySelector(".quote-modal-lead");
+
+        form.hidden = true;
+        form.setAttribute("aria-hidden", "true");
+        if (submittingEl) submittingEl.hidden = true;
+
+        if (dialog) dialog.classList.add("ticket-modal-success");
+        if (modalTitle) modalTitle.textContent = "Ticket submitted";
+        if (modalLead) modalLead.hidden = true;
+
+        if (success) {
+          success.hidden = false;
+          success.removeAttribute("aria-hidden");
+          const num = document.getElementById("ticket-success-number");
+          const link = document.getElementById("ticket-success-link");
+          if (num) num.textContent = "T-" + data.ticket_number;
+          if (link) {
+            link.href = "/support/ticket/?t=" + encodeURIComponent(data.access_token);
+          }
+        }
+
+        if (dialog) dialog.scrollTop = 0;
+        const focusTarget = document.getElementById("ticket-success-link");
+        if (focusTarget) focusTarget.focus();
+
+        document.dispatchEvent(new CustomEvent("bbncs:ticket-submitted"));
+      } catch (err) {
+        console.error(err);
+        const msg =
+          err?.message === "Failed to fetch"
+            ? "Could not reach the ticket database. Check your connection, disable blockers for this page, and try again."
+            : err?.message || "Could not submit ticket. Please try again or call us.";
+        showError(msg);
+        if (submittingEl) submittingEl.hidden = true;
+        form.hidden = false;
+        form.removeAttribute("aria-hidden");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+        }
+      }
+    });
+  }
+</script>

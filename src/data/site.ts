@@ -22,10 +22,17 @@ export const business = {
     "https://www.google.com/maps/search/?api=1&query=27780+Jefferson+Ave+Temecula+CA+92590",
   googleReviewsUrl:
     "https://www.google.com/maps/place/Bits+Bytes+and+Nibbles+Computer+Repair/@33.511062,-117.156951,17z/data=!4m8!3m7!1s0x80db7e33eb9757a3:0xe69b493f8a7f9e6c!8m2!3d33.511062!4d-117.156951!9m1!1b1",
+  /** Share bbncs.com/review/ with clients. Opens Google’s review flow for this listing. */
+  googleReviewWriteUrl:
+    "https://www.google.com/search?q=Bits+Bytes+and+Nibbles+Computer+Repair&ludocid=16645692278985525899#lrd=0x80db7e33eb9757a3:0xe69b493f8a7f9e6c,3,,,",
+  yelpReviewsUrl: "https://www.yelp.com/biz/bits-bytes-and-nibbles-temecula-2",
+  yelpReviewWriteUrl: "https://www.yelp.com/writeareview/biz/A18YZZfP3TPLzx18Pit1Hw",
   mapsEmbedSrc:
     "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d13306.510826950016!2d-117.156951!3d33.511062!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80db7e33eb9757a3%3A0xe69b493f8a7f9e6c!2sBits%20Bytes%20and%20Nibbles%20Computer%20Repair!5e0!3m2!1sen!2sus!4v1679953628494!5m2!1sen!2sus",
   social: {
     facebook: "https://www.facebook.com/bits-bytes-and-nibbles-368782795024",
+    yelp: "https://www.yelp.com/biz/bits-bytes-and-nibbles-temecula-2",
+    google: "https://www.google.com/maps/place/Bits+Bytes+and+Nibbles+Computer+Repair/@33.511062,-117.156951,17z/data=!4m8!3m7!1s0x80db7e33eb9757a3:0xe69b493f8a7f9e6c!8m2!3d33.511062!4d-117.156951!9m1!1b1",
     twitter: "",
     instagram: "",
     youtube: "",
@@ -79,12 +86,14 @@ export const clientLogos = [
 
 export const socialLinks = [
   { key: "facebook", label: "Facebook", href: business.social.facebook },
+  { key: "yelp", label: "Yelp", href: business.social.yelp },
+  { key: "google", label: "Google reviews", href: business.social.google },
   { key: "twitter", label: "Twitter", href: business.social.twitter },
   { key: "instagram", label: "Instagram", href: business.social.instagram },
   { key: "youtube", label: "YouTube", href: business.social.youtube },
   { key: "linkedin", label: "LinkedIn", href: business.social.linkedin },
 ].filter((link) => link.href && link.href !== "#") as {
-  key: "facebook" | "twitter" | "instagram" | "youtube" | "linkedin";
+  key: "facebook" | "yelp" | "google" | "twitter" | "instagram" | "youtube" | "linkedin";
   label: string;
   href: string;
 }[];
@@ -93,7 +102,7 @@ export const navLinks = [
   { label: "Home", href: "/", key: "home" },
   { label: "Managed IT", href: "/managed-it-services/", key: "managed-it" },
   { label: "Backup", href: "/managed-backup-solutions/", key: "backup" },
-  { label: "IT Support", href: "/it-support-services/", key: "support" },
+  { label: "IT Support", href: "/it-support-services/", key: "it-support" },
   { label: "FAQs", href: "/faqs/", key: "faqs" },
   { label: "Office", href: "/office/", key: "office" },
   { label: "Contact", href: "/contact/", key: "contact" },

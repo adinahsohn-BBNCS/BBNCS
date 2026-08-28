@@ -1,0 +1,102 @@
+---
+import TicketForm from "./TicketForm.astro";
+---
+
+<div
+  id="ticket-modal"
+  class="quote-modal"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="ticket-modal-title"
+>
+  <button class="quote-modal-backdrop" type="button" aria-label="Close ticket form" data-close-ticket
+  ></button>
+  <div class="quote-modal-dialog">
+    <button class="quote-modal-close" type="button" aria-label="Close" data-close-ticket>
+      <span aria-hidden="true">×</span>
+    </button>
+    <h2 id="ticket-modal-title">Open a support ticket</h2>
+    <p class="quote-modal-lead">
+      Existing clients: tell us what&rsquo;s going on and we&rsquo;ll follow up. You&rsquo;ll get a
+      private link to track status and add updates. For emergencies (systems down), call
+      <a href="tel:+19515064755">951-506-4755</a>.
+    </p>
+    <TicketForm />
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const modal = document.getElementById("ticket-modal");
+    if (!modal) return;
+
+    let lastFocus = null;
+
+    function resetTicketForm() {
+      const form = document.getElementById("bbncs-ticket-form");
+      const success = document.getElementById("ticket-success");
+      const submitBtn = document.getElementById("ticket-submit-btn");
+      const errEl = document.getElementById("ticket-form-error");
+      const dialog = modal.querySelector(".quote-modal-dialog");
+      const modalTitle = document.getElementById("ticket-modal-title");
+      const modalLead = dialog?.querySelector(".quote-modal-lead");
+      if (dialog) {
+        dialog.classList.remove("ticket-modal-success");
+        dialog.scrollTop = 0;
+      }
+      if (modalTitle) modalTitle.textContent = "Open a support ticket";
+      if (modalLead) modalLead.hidden = false;
+      if (form) {
+        form.hidden = false;
+        form.removeAttribute("aria-hidden");
+        form.reset();
+      }
+      if (success) {
+        success.hidden = true;
+        success.setAttribute("aria-hidden", "true");
+      }
+      const submittingEl = document.getElementById("ticket-form-submitting");
+      if (submittingEl) submittingEl.hidden = true;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit ticket";
+      }
+      if (errEl) errEl.hidden = true;
+    }
+
+    function openModal() {
+      resetTicketForm();
+      lastFocus = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add("quote-modal-open");
+      const firstField = modal.querySelector("input:not([type='hidden'])");
+      if (firstField) firstField.focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove("quote-modal-open");
+      resetTicketForm();
+      if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+    }
+
+    document.querySelectorAll("[data-open-ticket]").forEach(function (trigger) {
+      trigger.addEventListener("click", function (event) {
+        event.preventDefault();
+        openModal();
+      });
+    });
+
+    modal.querySelectorAll("[data-close-ticket]").forEach(function (el) {
+      el.addEventListener("click", closeModal);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !modal.hidden) closeModal();
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("ticket") || window.location.hash === "#ticket") openModal();
+  })();
+</script>

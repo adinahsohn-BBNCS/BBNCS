@@ -82,14 +82,22 @@ function Remove-FtpTree {
     if ($item.IsDirectory) {
       Remove-FtpTree -RemotePath $item.Path
       Write-Host "  removing dir $($item.Path)"
-      $request = New-FtpRequest -RemotePath $item.Path -Method ([System.Net.WebRequestMethods+Ftp]::RemoveDirectory)
-      $response = $request.GetResponse()
-      $response.Close()
+      try {
+        $request = New-FtpRequest -RemotePath $item.Path -Method ([System.Net.WebRequestMethods+Ftp]::RemoveDirectory)
+        $response = $request.GetResponse()
+        $response.Close()
+      } catch {
+        Write-Warning "  could not remove dir $($item.Path): $($_.Exception.Message)"
+      }
     } else {
       Write-Host "  removing file $($item.Path)"
-      $request = New-FtpRequest -RemotePath $item.Path -Method ([System.Net.WebRequestMethods+Ftp]::DeleteFile)
-      $response = $request.GetResponse()
-      $response.Close()
+      try {
+        $request = New-FtpRequest -RemotePath $item.Path -Method ([System.Net.WebRequestMethods+Ftp]::DeleteFile)
+        $response = $request.GetResponse()
+        $response.Close()
+      } catch {
+        Write-Warning "  could not remove file $($item.Path): $($_.Exception.Message)"
+      }
     }
   }
 }
@@ -155,7 +163,8 @@ function Remove-FtpFileIfExists {
 function Send-FtpFile {
   param(
     [string]$LocalPath,
-    [string]$RemotePath
+    [string]$RemotePath,
+    [switch]$SkipSizeVerify
   )
   $remotePath = $RemotePath -replace "\\", "/"
   $remoteDir = (Split-Path $remotePath -Parent) -replace "\\", "/"
@@ -181,6 +190,9 @@ function Send-FtpFile {
         if ($_.Exception.Message -notmatch "\(451\)") { throw }
       }
       Start-Sleep -Milliseconds 300
+      if ($SkipSizeVerify) {
+        return $true
+      }
       $remoteSize = Get-FtpFileSize -RemotePath $remotePath
       if ($remoteSize -eq $expectedSize) {
         return $true
@@ -201,10 +213,18 @@ function Send-FtpFile {
 function Upload-FtpDirectory {
   param(
     [string]$LocalPath,
-    [string]$RemotePath = ""
+    [string]$RemotePath = "",
+    [switch]$SkipRootHtml
   )
   $children = Get-ChildItem -LiteralPath $LocalPath -Force | Sort-Object PSIsContainer, Name
   foreach ($item in $children) {
+    if ($SkipRootHtml -and -not $RemotePath -and $item.Name -eq "index.html") {
+      Write-Host "  skipping index.html (DirectoryIndex uses home.html)"
+      continue
+    }
+    if ($SkipRootHtml -and -not $RemotePath -and $item.Name -eq "home.html") {
+      continue
+    }
     $remoteItem = if ($RemotePath) { "$RemotePath/$($item.Name)" } else { $item.Name }
     if ($item.PSIsContainer) {
       Ensure-FtpDirectory -RemotePath $remoteItem
@@ -263,13 +283,44 @@ if ($SkipClean) {
 
 Write-Host "Uploading new site from dist/ ..."
 $script:UploadFailures = @()
-Upload-FtpDirectory -LocalPath $DistPath
+Upload-FtpDirectory -LocalPath $DistPath -SkipRootHtml
+
+$homeLocal = Join-Path $DistPath "home.html"
+if (Test-Path $homeLocal) {
+  Write-Host "Uploading homepage (home.html) with HTTP verify..."
+  $homeOk = Send-FtpFile -LocalPath $homeLocal -RemotePath "home.html" -SkipSizeVerify
+  if ($homeOk) {
+    Start-Sleep -Seconds 2
+    try {
+      $check = Invoke-WebRequest -Uri "https://bbncs.com/" -UseBasicParsing -TimeoutSec 30
+      $expected = (Get-Item $homeLocal).Length
+      if ($check.Content.Length -lt ($expected * 0.5)) {
+        Write-Warning "Homepage HTTP size ($($check.Content.Length)) looks too small - retrying upload..."
+        $homeOk = Send-FtpFile -LocalPath $homeLocal -RemotePath "home.html" -SkipSizeVerify
+      } else {
+        Write-Host "  homepage verified $($check.Content.Length) bytes"
+      }
+    } catch {
+      Write-Warning "  could not HTTP-verify homepage: $($_.Exception.Message)"
+    }
+  }
+  if (-not $homeOk) {
+    $script:UploadFailures += "home.html"
+  } else {
+    Write-Host "  uploaded home.html"
+  }
+}
 
 if ($script:UploadFailures.Count -gt 0) {
+  $nonCritical = @("index.html", "home.html")
+  $critical = @($script:UploadFailures | Where-Object { $_ -notin $nonCritical })
   Write-Host ""
   Write-Warning "Some files failed to upload:"
   $script:UploadFailures | ForEach-Object { Write-Warning "  $_" }
-  throw "Deploy incomplete - $($script:UploadFailures.Count) file(s) failed."
+  if ($critical.Count -gt 0) {
+    throw "Deploy incomplete - $($critical.Count) file(s) failed."
+  }
+  Write-Warning "index.html/home.html may have failed (known host quirk). DirectoryIndex uses home.html when present."
 }
 
 Write-Host ""

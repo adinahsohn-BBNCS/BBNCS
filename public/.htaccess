@@ -16,5 +16,5 @@ RedirectMatch 301 ^/accountant-home/?$ https://bbncs.com/
 RedirectMatch 301 ^/it-service-management/?$ https://bbncs.com/managed-it-services/
 
 # Trailing slash consistency for Astro static routes
-DirectoryIndex index.html
+DirectoryIndex home.html index.html
 RedirectMatch 301 ^/about/?$ https://bbncs.com/about-us/

@@ -1,0 +1,176 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { business } from "../data/site";
+---
+
+<BaseLayout
+  title="Leave a Review"
+  description="Thank you for trusting Bits, Bytes & Nibbles. Leave a Google or Yelp review — links open our official business profiles."
+  noindex={true}
+>
+  <div class="inner-page review-page">
+    <PageHero
+      eyebrow={`${business.name} · Temecula, CA`}
+      title="Thank you for your business"
+      lead="If you have a moment, a short review on Google or Yelp helps other local businesses find us. It only takes a minute — and we truly appreciate it."
+      fullWidthLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner review-page-inner">
+        <div class="review-page-card">
+          <p class="review-trust-note">
+            These buttons open our <strong>official Google and Yelp profiles</strong> — the same
+            listings you would find by searching for us. This page is hosted at
+            <strong>bbncs.com</strong> and is not a third-party survey.
+          </p>
+
+          <dl class="review-business-details">
+            <div>
+              <dt>Business</dt>
+              <dd>{business.name}</dd>
+            </div>
+            <div>
+              <dt>Address</dt>
+              <dd>{business.address.full}</dd>
+            </div>
+            <div>
+              <dt>Phone</dt>
+              <dd>
+                <a href={`tel:${business.phoneTel}`}>{business.phone}</a>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="review-actions">
+            <a
+              class="btn btn-primary review-btn"
+              href={business.googleReviewWriteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-analytics-event="review_google_click"
+            >
+              Leave a Google review
+            </a>
+            <a
+              class="btn btn-outline review-btn"
+              href={business.yelpReviewWriteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-analytics-event="review_yelp_click"
+            >
+              Leave a Yelp review
+            </a>
+          </div>
+
+          <p class="review-footnote">
+            On Google, you may need to sign in. If prompted, look for <strong>Write a review</strong>
+            on our profile. Questions? Call us at{" "}
+            <a href={`tel:${business.phoneTel}`}>{business.phone}</a> or email{" "}
+            <a href={`mailto:${business.email}`}>{business.email}</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .review-page-inner {
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+
+  .review-page-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  .review-trust-note {
+    margin: 0 0 1.5rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .review-business-details {
+    display: grid;
+    gap: 1rem;
+    margin: 0 0 1.75rem;
+    padding: 1.25rem;
+    background: var(--surface-alt, #f8fafc);
+    border-radius: 8px;
+  }
+
+  .review-business-details dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .review-business-details dd {
+    margin: 0;
+    font-weight: 500;
+    color: var(--navy);
+  }
+
+  .review-business-details a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .review-business-details a:hover {
+    text-decoration: underline;
+  }
+
+  .review-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .review-btn {
+    width: 100%;
+    text-align: center;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .review-footnote {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .review-footnote a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .review-footnote a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 480px) {
+    .review-page-card {
+      padding: 2rem;
+    }
+
+    .review-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .review-btn {
+      flex: 1 1 12rem;
+      width: auto;
+    }
+  }
+</style>
