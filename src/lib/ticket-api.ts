@@ -15,20 +15,27 @@ export async function notifyTicketEvent(
   },
   authToken?: string,
 ) {
-  if (!functionsUrl) return;
+  if (!functionsUrl) return { ok: false, error: "Functions URL not configured" };
   try {
     const headers: Record<string, string> = {
       apikey: supabaseAnonKey,
+      Authorization: `Bearer ${authToken || supabaseAnonKey}`,
       "Content-Type": "application/json",
     };
-    if (authToken) headers.Authorization = `Bearer ${authToken}`;
-    await fetch(`${functionsUrl}/ticket-notify`, {
+    const res = await fetch(`${functionsUrl}/ticket-notify`, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.warn("Ticket notify failed:", data.error || res.status);
+      return { ok: false, error: data.error || `HTTP ${res.status}` };
+    }
+    return { ok: true, data };
   } catch (e) {
     console.warn("Ticket notify failed:", e);
+    return { ok: false, error: e instanceof Error ? e.message : "Notify failed" };
   }
 }
 

@@ -157,7 +157,24 @@ function Remove-FtpFileIfExists {
     $request = New-FtpRequest -RemotePath $RemotePath -Method ([System.Net.WebRequestMethods+Ftp]::DeleteFile)
     $response = $request.GetResponse()
     $response.Close()
-  } catch {}
+    return $true
+  } catch {
+    return $false
+  }
+}
+
+function Rename-FtpFile {
+  param(
+    [string]$FromPath,
+    [string]$ToPath
+  )
+  $from = $FromPath -replace "\\", "/"
+  $to = $ToPath -replace "\\", "/"
+  Remove-FtpFileIfExists -RemotePath $to | Out-Null
+  $request = New-FtpRequest -RemotePath $from -Method ([System.Net.WebRequestMethods+Ftp]::Rename)
+  $request.RenameTo = $to
+  $response = $request.GetResponse()
+  $response.Close()
 }
 
 function Send-FtpFile {
@@ -208,6 +225,46 @@ function Send-FtpFile {
     Start-Sleep -Seconds 3
   }
   return $false
+}
+
+function Send-FtpFileViaTemp {
+  param(
+    [string]$LocalPath,
+    [string]$RemotePath
+  )
+  $tempName = "_deploy_{0}.html" -f ([Guid]::NewGuid().ToString("N").Substring(0, 12))
+  Write-Host "  uploading via temp file $tempName -> $RemotePath"
+  if (-not (Send-FtpFile -LocalPath $LocalPath -RemotePath $tempName -SkipSizeVerify)) {
+    Remove-FtpFileIfExists -RemotePath $tempName | Out-Null
+    return $false
+  }
+  try {
+    Rename-FtpFile -FromPath $tempName -ToPath $RemotePath
+    return $true
+  } catch {
+    Write-Warning "  rename failed ($tempName -> $RemotePath): $($_.Exception.Message)"
+    Remove-FtpFileIfExists -RemotePath $tempName | Out-Null
+    return $false
+  }
+}
+
+function Test-HomepageLive {
+  param([string]$LocalPath)
+  try {
+    $check = Invoke-WebRequest -Uri "https://bbncs.com/" -UseBasicParsing -TimeoutSec 30
+    $expected = (Get-Item $LocalPath).Length
+    if ($check.Content.Length -lt ($expected * 0.5)) {
+      return $false
+    }
+    if ($check.Content -notmatch "Bits, Bytes") {
+      return $false
+    }
+    Write-Host "  homepage verified ($($check.Content.Length) bytes)"
+    return $true
+  } catch {
+    Write-Warning "  could not HTTP-verify homepage: $($_.Exception.Message)"
+    return $false
+  }
 }
 
 function Upload-FtpDirectory {
@@ -288,26 +345,29 @@ Upload-FtpDirectory -LocalPath $DistPath -SkipRootHtml
 $homeLocal = Join-Path $DistPath "home.html"
 if (Test-Path $homeLocal) {
   Write-Host "Uploading homepage (home.html) with HTTP verify..."
-  $homeOk = Send-FtpFile -LocalPath $homeLocal -RemotePath "home.html" -SkipSizeVerify
+  $homeOk = Send-FtpFileViaTemp -LocalPath $homeLocal -RemotePath "home.html"
+  if (-not $homeOk) {
+    Write-Host "  temp upload failed; trying direct home.html upload..."
+    $homeOk = Send-FtpFile -LocalPath $homeLocal -RemotePath "home.html" -SkipSizeVerify
+  }
   if ($homeOk) {
     Start-Sleep -Seconds 2
-    try {
-      $check = Invoke-WebRequest -Uri "https://bbncs.com/" -UseBasicParsing -TimeoutSec 30
-      $expected = (Get-Item $homeLocal).Length
-      if ($check.Content.Length -lt ($expected * 0.5)) {
-        Write-Warning "Homepage HTTP size ($($check.Content.Length)) looks too small - retrying upload..."
-        $homeOk = Send-FtpFile -LocalPath $homeLocal -RemotePath "home.html" -SkipSizeVerify
-      } else {
-        Write-Host "  homepage verified $($check.Content.Length) bytes"
+    if (-not (Test-HomepageLive -LocalPath $homeLocal)) {
+      Write-Warning "Homepage verify failed - retrying upload..."
+      $homeOk = Send-FtpFileViaTemp -LocalPath $homeLocal -RemotePath "home.html"
+      if ($homeOk) {
+        Start-Sleep -Seconds 2
+        $homeOk = Test-HomepageLive -LocalPath $homeLocal
       }
-    } catch {
-      Write-Warning "  could not HTTP-verify homepage: $($_.Exception.Message)"
     }
   }
-  if (-not $homeOk) {
-    $script:UploadFailures += "home.html"
-  } else {
+  if ($homeOk) {
     Write-Host "  uploaded home.html"
+    if (Remove-FtpFileIfExists -RemotePath "index.html") {
+      Write-Host "  removed stale index.html (DirectoryIndex uses home.html)"
+    }
+  } else {
+    $script:UploadFailures += "home.html"
   }
 }
 

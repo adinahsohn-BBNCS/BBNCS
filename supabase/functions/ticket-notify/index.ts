@@ -40,10 +40,13 @@ function esc(s: string) {
 async function sendEmail(to: string, subject: string, html: string) {
   const key = Deno.env.get("RESEND_API_KEY")?.trim();
   if (!key) {
-    console.warn("RESEND_API_KEY not set — email skipped:", subject, "→", to);
-    return { ok: false, skipped: true };
+    return { ok: false, skipped: true, error: "RESEND_API_KEY not configured in Supabase secrets" };
   }
-  const from = Deno.env.get("NOTIFY_FROM_EMAIL")?.trim() || "BBNCS Support <notifications@bbncs.com>";
+  let from = Deno.env.get("NOTIFY_FROM_EMAIL")?.trim() || "onboarding@resend.dev";
+  // Resend test sender must be bare address or simple format
+  if (from.includes("onboarding@resend.dev") && from.includes("<")) {
+    from = "onboarding@resend.dev";
+  }
   const res = await fetch(RESEND_API, {
     method: "POST",
     headers: {
@@ -153,7 +156,23 @@ Deno.serve(async (req) => {
         results.push(await sendEmail(clientEmail, `${num}: We received your ticket`, clientHtml));
       }
       for (const email of await adminEmails(admin)) {
-        results.push(await sendEmail(email, `${num}: New ticket — ${ticket.subject}`, adminHtml));
+        const sent = await sendEmail(email, `${num}: New ticket — ${ticket.subject}`, adminHtml);
+        if (!sent.ok && sent.error?.includes("only send testing emails")) {
+          const testInbox = Deno.env.get("NOTIFY_TEST_INBOX")?.trim() || "adinahsohn@gmail.com";
+          results.push(
+            await sendEmail(
+              testInbox,
+              `${num}: New ticket (admin copy) — ${ticket.subject}`,
+              adminHtml + `<p><em>Admin alert — could not send to ${esc(email)} until bbncs.com is verified in Resend.</em></p>`,
+            ),
+          );
+        } else {
+          results.push(sent);
+        }
+      }
+      const failed = results.filter((r) => !r.ok);
+      if (failed.length === results.length && results.length > 0) {
+        return json({ ok: false, error: failed[0].error || "All emails failed", results }, 502);
       }
       return json({ ok: true, results });
     }

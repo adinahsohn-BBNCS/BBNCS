@@ -24,7 +24,7 @@ const supabaseConfig = getSupabasePublicConfig();
   <p class="ticket-success-number-line">
     Your ticket number is <strong id="ticket-success-number"></strong>
   </p>
-  <p class="ticket-success-lead">We emailed you a link to track this ticket. You can also use the button below.</p>
+  <p class="ticket-success-lead" id="ticket-success-email-note">We emailed you a confirmation with your ticket link.</p>
   <a class="btn btn-primary ticket-success-cta" id="ticket-success-link" href="#">View your ticket</a>
   <p class="ticket-form-hint ticket-success-hint">
     For emergencies, call <a href="tel:+19515064755">951-506-4755</a> anytime.
@@ -169,6 +169,12 @@ const supabaseConfig = getSupabasePublicConfig();
 
         const data = result.data;
 
+        const notifyResult = await notifyTicketEvent(functionsUrl, supabaseKey, {
+          event: "ticket_created",
+          ticket_id: data.id,
+          access_token: data.access_token,
+        });
+
         const fileInput = document.getElementById("ticket-files");
         const files = fileInput?.files ? Array.from(fileInput.files) : [];
         for (const file of files) {
@@ -181,11 +187,14 @@ const supabaseConfig = getSupabasePublicConfig();
           }
         }
 
-        notifyTicketEvent(functionsUrl, supabaseKey, {
-          event: "ticket_created",
-          ticket_id: data.id,
-          access_token: data.access_token,
-        });
+        let emailNote = notifyResult.ok
+          ? "We emailed you a confirmation with your ticket link."
+          : null;
+        if (!notifyResult.ok) {
+          console.warn("Confirmation email failed:", notifyResult.error);
+          emailNote =
+            "We could not send a confirmation email. Use the button below to view your ticket.";
+        }
 
         const dialog = form.closest(".quote-modal-dialog");
         const modalTitle = document.getElementById("ticket-modal-title");
@@ -208,6 +217,8 @@ const supabaseConfig = getSupabasePublicConfig();
           if (link) {
             link.href = "/support/ticket/?t=" + encodeURIComponent(data.access_token);
           }
+          const emailNoteEl = document.getElementById("ticket-success-email-note");
+          if (emailNoteEl && emailNote) emailNoteEl.textContent = emailNote;
         }
 
         if (dialog) dialog.scrollTop = 0;

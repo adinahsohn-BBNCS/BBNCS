@@ -414,6 +414,12 @@ verify_jwt = false
 [functions.calendar-events]
 verify_jwt = false
 
+[functions.ticket-notify]
+verify_jwt = false
+
+[functions.ticket-attachment]
+verify_jwt = false
+
 [experimental.pgdelta]
 enabled = true
 # Directory under `supabase/` where declarative files are written.
