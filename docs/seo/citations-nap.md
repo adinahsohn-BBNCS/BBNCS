@@ -20,7 +20,7 @@ Short name **BBNCS** is fine in marketing copy, but directory listings should us
 | Platform | Action |
 |----------|--------|
 | [Google Business Profile](https://business.google.com) | Claim, verify, optimize — see `gbp-checklist.md` |
-| [Bing Places](https://www.bingplaces.com) | Synced from Google — July 10, 2026; photos uploaded; pending publish |
+| [Bing Places](https://www.bingplaces.com) | **Live on Bing Maps** (verified Aug 31, 2026) — update description away from retail/repair copy; confirm Suite G in dashboard |
 | [Apple Business Connect](https://businessconnect.apple.com) | Claim listing |
 | [Yelp](https://biz.yelp.com) | Claim or create |
 | [BBB](https://www.bbb.org) | Verify accreditation if applicable |
@@ -54,13 +54,15 @@ Old listings may still reference:
 
 Update website URL to `https://bbncs.com` on every profile you control.
 
-## Follow-up: verify Bing listing live — Friday, July 17, 2026
+## Follow-up: Bing listing (verified August 31, 2026)
 
-Bing synced from Google on July 10, 2026. Publishing can take several days after photos are added.
+Bing Maps search shows **Bits Bytes and Nibbles Computer Repair** at **27780 Jefferson Ave, Temecula, CA 92590** with phone **951-506-4755** and website **bbncs.com**. Listing is **live** (not pending).
 
-- [ ] Search Bing or Bing Maps: `Bits Bytes Nibbles Temecula`
-- [ ] Listing is live (not “pending” or unclaimed)
-- [ ] NAP matches canonical NAP above (Suite **G**, **951-506-4755**)
-- [ ] Website shows **https://bbncs.com**
-- [ ] Uploaded photos appear on the listing
-- [ ] If still not live after 7 days, check [bingplaces.com](https://www.bingplaces.com) dashboard for verification or rejection notes
+**Still to improve in [bingplaces.com](https://www.bingplaces.com):**
+
+- [ ] Business name/description — panel still emphasizes computer repair/retail; align with managed IT, backup, and business support
+- [ ] Confirm **Suite G** appears in the published address (Bing panel did not show suite on Aug 31 check)
+- [ ] Confirm uploaded photos appear on the map card
+- [ ] Website link points to **https://bbncs.com** (not only `/contact/`)
+
+**Aggregator cleanup (optional):** Third-party sites may still show **Suite 8** or old retail copy (e.g. unilocal). Correct where editable.
