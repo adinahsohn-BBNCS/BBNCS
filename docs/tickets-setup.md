@@ -111,3 +111,29 @@ Clients and admins can attach images, PDFs, or plain text (max 10 MB each) on su
 - Sales/consultation still uses FormSubmit on Contact / quote modal — tickets are for support work.
 - Admin pages are `noindex`.
 - Deploy ticket + calendar functions: `.\scripts\deploy-ticket-functions.ps1`
+
+## Rotate Resend API key (after a key was exposed)
+
+Do this if an API key was pasted in chat, email, or a screenshot.
+
+1. **Resend** → [API Keys](https://resend.com/api-keys) → **Create API Key**
+   - Name: `BBNCS tickets (2026-09)`
+   - Permission: **Sending access**
+   - Copy the new `re_...` key (shown once)
+
+2. **Revoke the old key** in the same list (the one that was exposed)
+
+3. **Supabase** → BBNCS-TICKETS → **Edge Functions** → **Secrets**
+   - Edit **`RESEND_API_KEY`** → paste **only** the new `re_...` value (no quotes, no variable name in the value box)
+   - Leave **`NOTIFY_FROM_EMAIL`** as `BBNCS Support <notify@bbncs.com>`
+
+4. **Local** — update `RESEND_API_KEY` in `.env.supabase` (gitignored)
+
+5. **Test** — from repo root:
+   ```powershell
+   .\scripts\test-resend.ps1
+   ```
+   Then submit a test ticket and confirm confirmation email arrives.
+
+No redeploy of `ticket-notify` is required — secrets are read at runtime.
+

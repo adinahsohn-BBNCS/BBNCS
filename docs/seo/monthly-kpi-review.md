@@ -58,6 +58,7 @@ Location: [search.google.com/search-console](https://search.google.com/search-co
 - [ ] Case study updated or added this quarter (`src/content/case-studies/`)
 - [ ] 2–4 review requests sent to clients
 - [ ] NAP spot-check on top 5 directories
+- [ ] Google Business Profile updated if needed → **Bing Places → Sync with Google**
 
 ## Quarterly competitor check
 

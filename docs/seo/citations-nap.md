@@ -20,7 +20,7 @@ Short name **BBNCS** is fine in marketing copy, but directory listings should us
 | Platform | Action |
 |----------|--------|
 | [Google Business Profile](https://business.google.com) | Claim, verify, optimize — see `gbp-checklist.md` |
-| [Bing Places](https://www.bingplaces.com) | **Live on Bing Maps** (verified Aug 31, 2026) — update description away from retail/repair copy; confirm Suite G in dashboard |
+| [Bing Places](https://www.bingplaces.com) | **Live** (verified Sep 2026) — edit in **Google** first, then **Sync with Google** in Bing; see `bing-places-checklist.md` |
 | [Apple Business Connect](https://businessconnect.apple.com) | Claim listing |
 | [Yelp](https://biz.yelp.com) | Claim or create |
 | [BBB](https://www.bbb.org) | Verify accreditation if applicable |
@@ -54,15 +54,12 @@ Old listings may still reference:
 
 Update website URL to `https://bbncs.com` on every profile you control.
 
-## Follow-up: Bing listing (verified August 31, 2026)
+## Bing ↔ Google workflow
 
-Bing Maps search shows **Bits Bytes and Nibbles Computer Repair** at **27780 Jefferson Ave, Temecula, CA 92590** with phone **951-506-4755** and website **bbncs.com**. Listing is **live** (not pending).
+**Google Business Profile is the source of truth.** Bing does **not** auto-update — use **Sync with Google** in [bingplaces.com](https://www.bingplaces.com) after you change GBP.
 
-**Still to improve in [bingplaces.com](https://www.bingplaces.com):**
+**When to sync Bing:** After any GBP edit (description, hours, photos, website), or roughly **monthly** as a spot-check.
 
-- [ ] Business name/description — panel still emphasizes computer repair/retail; align with managed IT, backup, and business support
-- [ ] Confirm **Suite G** appears in the published address (Bing panel did not show suite on Aug 31 check)
-- [ ] Confirm uploaded photos appear on the map card
-- [ ] Website link points to **https://bbncs.com** (not only `/contact/`)
+**Verified good:** September 2, 2026 (synced from Google; NAP and listing look correct on Bing Maps).
 
 **Aggregator cleanup (optional):** Third-party sites may still show **Suite 8** or old retail copy (e.g. unilocal). Correct where editable.

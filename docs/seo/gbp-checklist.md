@@ -2,6 +2,8 @@
 
 Use this checklist to optimize your GBP listing at [business.google.com](https://business.google.com).
 
+**This is your primary local listing.** Bing Places mirrors Google only when you click **Sync with Google** in Bing — keep GBP accurate first, then sync Bing monthly or after any edit (see `bing-places-checklist.md`).
+
 ## Business info (must match website NAP exactly)
 
 | Field | Value |
@@ -9,7 +11,7 @@ Use this checklist to optimize your GBP listing at [business.google.com](https:/
 | Name | Bits, Bytes & Nibbles |
 | Address | 27780 Jefferson Ave, Suite G, Temecula, CA 92590 |
 | Phone | 951-506-4755 |
-| Website | https://bbncs.com/contact/ |
+| Website | https://bbncs.com |
 
 ## Categories
 
@@ -70,3 +72,4 @@ Rotate topics:
 - [ ] Add or refresh photos
 - [ ] Verify hours and services still match website
 - [ ] Respond to new reviews
+- [ ] **Bing Places → Sync with Google** (Bing does not auto-update)
