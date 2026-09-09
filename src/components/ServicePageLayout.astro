@@ -65,6 +65,17 @@ const structuredData = [
           {
             page.navKey === "it-support" && (
               <section class="service-ticket-panel reason-item" id="existing-clients" aria-labelledby="existing-clients-heading">
+                <p class="service-ticket-actions service-remote-actions">
+                  <a
+                    class="btn btn-primary"
+                    href={business.screenConnectGuestUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-analytics-event="remote_support_start"
+                  >
+                    Start a remote session
+                  </a>
+                </p>
                 <h3 id="existing-clients-heading">Existing clients</h3>
                 <p>
                   For day-to-day IT issues, open a support ticket online. We&rsquo;ll follow up and

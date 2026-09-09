@@ -43,6 +43,9 @@ export const business = {
     address: "27780 Jefferson Ave, Suite G, Temecula, CA 92590",
     phone: "951-506-4755",
   },
+  /** Standing ScreenConnect session. Update if this session is recreated. */
+  screenConnectGuestUrl:
+    "https://cmd-bbncs.screenconnect.com/?Session=0579cedd-9c35-4fd1-8d8f-69d1bd1fbeae",
 } as const;
 
 export const consultationCta = "Schedule Your Free Consultation";
