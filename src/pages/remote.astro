@@ -1,31 +1,119 @@
 ---
 /**
- * Stable public URL for remote support. Redirects to the standing ScreenConnect session.
- * Update business.screenConnectGuestUrl in src/data/site.ts if that session is recreated.
+ * Stable public URL for remote support. Update business.screenConnectGuestUrl
+ * in src/data/site.ts if that session is recreated.
  */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
 import { business } from "../data/site";
-
-const dest = business.screenConnectGuestUrl;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <meta http-equiv="refresh" content={`0;url=${dest}`} />
-    <title>Start a remote session · BBNCS</title>
-  </head>
-  <body>
-    <p>
-      <a id="remote-continue" href={dest} rel="noopener noreferrer">Continue to remote session</a>
-    </p>
-    <script is:inline>
-      (function () {
-        var link = document.getElementById("remote-continue");
-        if (link && link.href) location.replace(link.href);
-      })();
-    </script>
-  </body>
-</html>
+<BaseLayout
+  title="Start a remote session"
+  description="Start a BBNCS remote support session. You'll download a ScreenConnect helper so a technician can join this computer."
+  current="it-support"
+  noindex
+>
+  <div class="inner-page remote-page">
+    <PageHero
+      eyebrow={`${business.shortName} · Remote support`}
+      title="Start a remote session"
+      lead="This page is on bbncs.com. The next step opens ScreenConnect so a BBNCS technician can help with this computer."
+      fullWidthLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner remote-page-inner">
+        <div class="remote-page-card">
+          <ol class="remote-steps">
+            <li>
+              Click <strong>Start remote session</strong>. Your browser will download a small helper
+              app.
+            </li>
+            <li>
+              Open the download and click <strong>Run</strong> if Windows asks. Stay on the line — a
+              technician will join from our console.
+            </li>
+          </ol>
+
+          <p class="remote-actions">
+            <a
+              class="btn btn-primary remote-btn"
+              href={business.screenConnectGuestUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-analytics-event="remote_support_start"
+            >
+              Start remote session
+            </a>
+          </p>
+
+          <p class="remote-footnote">
+            You can close the helper at any time to end the session. Trouble downloading? Call{" "}
+            <a href={`tel:${business.phoneTel}`} data-analytics-event="phone_click">{business.phone}</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .remote-page-inner {
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+
+  .remote-page-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  .remote-steps {
+    margin: 0 0 1.5rem;
+    padding-left: 1.35rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .remote-steps li + li {
+    margin-top: 0.75rem;
+  }
+
+  .remote-actions {
+    margin: 0 0 1.25rem;
+  }
+
+  .remote-btn {
+    width: 100%;
+  }
+
+  .remote-footnote {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .remote-footnote a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .remote-footnote a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 480px) {
+    .remote-page-card {
+      padding: 2rem;
+    }
+
+    .remote-btn {
+      width: auto;
+    }
+  }
+</style>
