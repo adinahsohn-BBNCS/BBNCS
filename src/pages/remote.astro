@@ -1,0 +1,31 @@
+---
+/**
+ * Stable public URL for remote support. Redirects to the standing ScreenConnect session.
+ * Update business.screenConnectGuestUrl in src/data/site.ts if that session is recreated.
+ */
+import { business } from "../data/site";
+
+const dest = business.screenConnectGuestUrl;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content={`0;url=${dest}`} />
+    <title>Start a remote session · BBNCS</title>
+  </head>
+  <body>
+    <p>
+      <a id="remote-continue" href={dest} rel="noopener noreferrer">Continue to remote session</a>
+    </p>
+    <script is:inline>
+      (function () {
+        var link = document.getElementById("remote-continue");
+        if (link && link.href) location.replace(link.href);
+      })();
+    </script>
+  </body>
+</html>

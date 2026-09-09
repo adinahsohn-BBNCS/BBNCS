@@ -6,7 +6,7 @@ export default defineConfig({
   trailingSlash: "always",
   integrations: [
     sitemap({
-      filter: (page) => !page.includes("/admin/"),
+      filter: (page) => !page.includes("/admin/") && !page.includes("/remote/"),
     }),
   ],
   server: {
