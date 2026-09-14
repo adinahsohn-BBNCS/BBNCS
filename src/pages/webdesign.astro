@@ -1,0 +1,61 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import PageCta from "../components/PageCta.astro";
+import { websites } from "../data/webdesign";
+import { buildBreadcrumbSchema } from "../lib/seo";
+
+const structuredData = buildBreadcrumbSchema([
+  { name: "Home", path: "/" },
+  { name: "Web design", path: "/webdesign/" },
+]);
+---
+
+<BaseLayout
+  title="Web design"
+  description="Websites designed and built by BBNCS — live examples including managed IT, airport, and vehicle listing sites."
+  structuredData={structuredData}
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow="Sites we've built · BBNCS"
+      title="Web design"
+      lead="A few live websites we've designed and built. Open any card to visit the site."
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner">
+        <ul class="webdesign-grid">
+          {
+            websites.map((site) => (
+              <li>
+                <a
+                  class="webdesign-card"
+                  href={site.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src={site.screenshot}
+                    alt=""
+                    width="1280"
+                    height="800"
+                    loading="lazy"
+                  />
+                  <div class="webdesign-card-body">
+                    <p class="webdesign-card-domain">{site.domain}</p>
+                    <h2>{site.name}</h2>
+                    <p>{site.description}</p>
+                    <span class="card-link">Visit site</span>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <PageCta emphasisLead="See why local businesses trust BBNCS — schedule your free consultation today." />
+  </div>
+</BaseLayout>

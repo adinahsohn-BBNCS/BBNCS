@@ -1036,6 +1036,83 @@ body.nav-open {
   color: var(--blue);
 }
 
+/* Web design showcase */
+
+.webdesign-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.webdesign-card {
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.webdesign-card:hover {
+  border-color: rgba(30, 79, 214, 0.25);
+  box-shadow: 0 8px 28px rgba(15, 31, 61, 0.08);
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.webdesign-card img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.webdesign-card-body {
+  padding: 1.25rem 1.35rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.webdesign-card-domain {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--blue);
+}
+
+.webdesign-card h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.12rem;
+  font-weight: 650;
+  color: var(--navy);
+}
+
+.webdesign-card-body p:last-of-type {
+  margin: 0;
+  flex: 1;
+  font-size: 0.925rem;
+  color: var(--slate);
+  line-height: 1.55;
+}
+
+.webdesign-card .card-link {
+  margin-top: 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue);
+}
+
 /* CTA band */
 
 .cta-band {
@@ -1802,6 +1879,10 @@ body.quote-modal-open {
   }
 
   .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .webdesign-grid {
     grid-template-columns: 1fr;
   }
 
