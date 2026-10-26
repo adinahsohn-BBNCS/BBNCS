@@ -111,6 +111,7 @@ Clients and admins can attach images, PDFs, or plain text (max 10 MB each) on su
 - Sales/consultation still uses FormSubmit on Contact / quote modal — tickets are for support work.
 - Admin pages are `noindex`.
 - Deploy ticket + calendar functions: `.\scripts\deploy-ticket-functions.ps1`
+- Free-tier Supabase pauses after 7 days without activity. `.github/workflows/supabase-keepalive.yml` queries the database every Monday and Thursday; a failed run (GitHub emails you) usually means the project is already paused and needs a manual restore.
 
 ## Rotate Resend API key (after a key was exposed)
 

@@ -1,0 +1,27 @@
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "0 16 * * 1,4"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://uuoeebuivoxnwapgpnaq.supabase.co
+      # Publishable browser key — already public in every bbncs.com page.
+      SUPABASE_KEY: sb_publishable_KGMosYDzxOmGmnL_mGkp1Q_2pHHPDRs
+    steps:
+      - name: Query tickets table
+        run: |
+          status=$(curl -s -o response.txt -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/tickets?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "HTTP $status"
+          cat response.txt
+          if [ "$status" != "200" ]; then
+            echo "::error::Supabase did not respond normally — the project may be paused. Restore it in the Supabase dashboard."
+            exit 1
+          fi
