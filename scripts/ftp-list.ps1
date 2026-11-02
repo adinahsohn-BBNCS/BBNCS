@@ -4,6 +4,7 @@ param([string]$RemotePath = "")
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $EnvFile = Join-Path $ProjectRoot ".env.deploy"
+. (Join-Path $PSScriptRoot "ftp-tls.ps1")
 
 Get-Content $EnvFile | ForEach-Object {
   if ($_ -match "^\s*#" -or $_ -match "^\s*$") { return }

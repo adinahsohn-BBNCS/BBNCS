@@ -32,7 +32,9 @@ Output goes to `import/` (gitignored). Optional: drop a `wp-content` zip from cP
 
 ## Deploy
 
-Copy `.env.deploy.example` to `.env.deploy` and fill in FTPS credentials (host uses FTP over SSL on port 21). Never commit `.env.deploy`.
+The site is hosted on **Hostinger** (moved from the old cPanel host on Nov 2, 2026). DNS stays at Hover: only the `@` and `www` A records point to Hostinger; MX, SPF, DMARC, and Resend records are unchanged.
+
+Copy `.env.deploy.example` to `.env.deploy` and fill in the Hostinger FTP account (FTP over SSL on port 21). Never commit `.env.deploy`.
 
 ```bash
 npm run deploy          # build + upload to bbncs.com
@@ -45,7 +47,7 @@ To upload without removing old files first (faster updates):
 npm run deploy -- -SkipClean
 ```
 
-Deploy uses FTPS to `public_html/`. It does not update GitHub — commit and push separately when you want a backup.
+Deploy uses FTPS to `public_html/`. Hostinger's FTP certificate is issued to `*.hstgr.io`, so `scripts/ftp-tls.ps1` accepts that name when connecting by IP. It does not update GitHub — commit and push separately when you want a backup.
 
 ## SEO
 
@@ -68,6 +70,6 @@ Add markdown files to `src/content/blog/` and `src/content/case-studies/`, then 
 
 ## Status
 
-- Live at [bbncs.com](https://bbncs.com/) (Astro static site)
+- Live at [bbncs.com](https://bbncs.com/) (Astro static site on Hostinger, Lifetime SSL)
 - Source backup: [GitHub — BBNCS](https://github.com/adinahsohn-BBNCS/BBNCS)
 - WordPress archive: local `import/` folder + your cPanel full backup

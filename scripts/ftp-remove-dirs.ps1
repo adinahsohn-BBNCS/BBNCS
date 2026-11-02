@@ -3,6 +3,7 @@ param([string[]]$RemoteDirs)
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot "ftp-tls.ps1")
 Get-Content (Join-Path $ProjectRoot ".env.deploy") | ForEach-Object {
   if ($_ -match "^\s*#" -or $_ -match "^\s*$") { return }
   $name, $value = $_ -split "=", 2

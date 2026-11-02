@@ -11,6 +11,7 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $DistPath = Join-Path $ProjectRoot "dist"
 $EnvFile = Join-Path $ProjectRoot ".env.deploy"
+. (Join-Path $PSScriptRoot "ftp-tls.ps1")
 
 function Load-EnvFile {
   param([string]$Path)
@@ -147,8 +148,31 @@ function Get-FtpFileSize {
     $response.Close()
     return $size
   } catch {
-    return -1
+    return Get-FtpFileSizeFromListing -RemotePath $RemotePath
   }
+}
+
+function Get-FtpFileSizeFromListing {
+  param([string]$RemotePath)
+  $normalized = ($RemotePath -replace "\\", "/").Trim("/")
+  $slash = $normalized.LastIndexOf("/")
+  $parent = if ($slash -ge 0) { $normalized.Substring(0, $slash) } else { "" }
+  $fileName = $normalized.Substring($slash + 1)
+  try {
+    $request = New-FtpRequest -RemotePath $parent -Method ([System.Net.WebRequestMethods+Ftp]::ListDirectoryDetails)
+    $response = $request.GetResponse()
+    $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
+    $text = $reader.ReadToEnd()
+    $reader.Close()
+    $response.Close()
+    foreach ($line in ($text -split "`r?`n")) {
+      $fields = $line -split "\s+"
+      if ($fields.Count -ge 9 -and $fields[-1] -eq $fileName -and -not $line.StartsWith("d")) {
+        return [long]$fields[4]
+      }
+    }
+  } catch {}
+  return -1
 }
 
 function Remove-FtpFileIfExists {

@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $EnvFile = Join-Path $ProjectRoot ".env.deploy"
+. (Join-Path $PSScriptRoot "ftp-tls.ps1")
 
 function Load-EnvFile {
   param([string]$Path)
