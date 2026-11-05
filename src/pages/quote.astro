@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ContactForm from "../components/ContactForm.astro";
+import PageHero from "../components/PageHero.astro";
+import { business } from "../data/site";
+---
+
+<BaseLayout
+  title="Request a Quote"
+  description="Request a free quote for managed IT, backup, or IT support from BBNCS in Temecula. We follow up within one business day."
+  current="contact"
+>
+  <div class="inner-page">
+    <PageHero
+      eyebrow={`${business.tagline} · Temecula, CA`}
+      title="Request a quote"
+      lead="Tell us what you need. We'll follow up within one business day — often sooner — to schedule a free 20–30 minute consultation with no obligation."
+      fullWidthLead
+    />
+
+    <section class="section section-tight">
+      <div class="section-inner contact-page-inner">
+        <div class="contact-page-card office-details">
+          <h2>Your details</h2>
+          <ContactForm idPrefix="page-quote" />
+        </div>
+
+        <aside class="contact-page-card office-details">
+          <h2>Prefer to talk?</h2>
+
+          <h3>Phone</h3>
+          <p>
+            <a href={`tel:${business.phoneTel}`} data-analytics-event="phone_click">{business.phone}</a>
+          </p>
+
+          <h3>Email</h3>
+          <p>
+            <a href={`mailto:${business.email}`}>{business.email}</a>
+          </p>
+
+          <h3>How we price our services</h3>
+          <p>
+            Plans are based on your users, devices, and the services you need — not a
+            one-size-fits-all package. We learn your setup first, then provide a clear quote with no
+            surprise fees.
+          </p>
+
+          <p>
+            <a class="text-link" href="/contact/">All contact options &amp; office hours →</a>
+          </p>
+        </aside>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

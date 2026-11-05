@@ -1,33 +1,40 @@
 ---
 import { business } from "../data/site";
 
+interface Props {
+  /** Unique per page instance — the quote modal on every page uses the default. */
+  idPrefix?: string;
+}
+
+const { idPrefix = "quote" } = Astro.props;
+const formId = idPrefix === "quote" ? "bbncs-contact-form" : `${idPrefix}-contact-form`;
 const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
 ---
 
-<form class="contact-form" id="bbncs-contact-form" action={`https://formsubmit.co/${notifyEmail}`} method="POST">
+<form class="contact-form js-bbncs-quote-form" id={formId} action={`https://formsubmit.co/${notifyEmail}`} method="POST">
   <input type="hidden" name="_subject" value="BBNCS website — consultation request" />
   <input type="hidden" name="_captcha" value="false" />
-  <input type="hidden" name="_next" id="formsubmit-next" value="" />
+  <input type="hidden" name="_next" class="js-formsubmit-next" value="" />
   <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
 
   <div class="form-row">
     <div>
-      <label for="quote-name">Name *</label>
-      <input id="quote-name" name="name" type="text" required placeholder="Your name" />
+      <label for={`${idPrefix}-name`}>Name *</label>
+      <input id={`${idPrefix}-name`} name="name" type="text" required placeholder="Your name" />
     </div>
     <div>
-      <label for="quote-phone">Phone *</label>
-      <input id="quote-phone" name="phone" type="tel" required placeholder="(951) 555-0100" />
+      <label for={`${idPrefix}-phone`}>Phone *</label>
+      <input id={`${idPrefix}-phone`} name="phone" type="tel" required placeholder="(951) 555-0100" />
     </div>
   </div>
   <div class="form-row">
     <div>
-      <label for="quote-email">Email *</label>
-      <input id="quote-email" name="email" type="email" required placeholder="you@company.com" />
+      <label for={`${idPrefix}-email`}>Email *</label>
+      <input id={`${idPrefix}-email`} name="email" type="email" required placeholder="you@company.com" />
     </div>
     <div>
-      <label for="quote-service">Service *</label>
-      <select id="quote-service" name="service" required>
+      <label for={`${idPrefix}-service`}>Service *</label>
+      <select id={`${idPrefix}-service`} name="service" required>
         <option value="Managed IT">Managed IT</option>
         <option value="Backup">Backup</option>
         <option value="IT Support">IT Support</option>
@@ -35,21 +42,18 @@ const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
     </div>
   </div>
   <div class="form-full">
-    <label for="quote-subject">Subject</label>
-    <input id="quote-subject" name="subject" type="text" placeholder="Optional" />
+    <label for={`${idPrefix}-subject`}>Subject</label>
+    <input id={`${idPrefix}-subject`} name="subject" type="text" placeholder="Optional" />
   </div>
   <div class="form-full">
-    <label for="quote-message">How can we help?</label>
-    <textarea id="quote-message" name="message" placeholder="Describe your IT needs"></textarea>
+    <label for={`${idPrefix}-message`}>How can we help?</label>
+    <textarea id={`${idPrefix}-message`} name="message" placeholder="Describe your IT needs"></textarea>
   </div>
   <button class="btn btn-primary" type="submit">Send request</button>
 </form>
 
 <script is:inline>
   (function () {
-    var form = document.getElementById("bbncs-contact-form");
-    if (!form) return;
-
     function buildReturnUrl() {
       var url = new URL(window.location.href);
       url.searchParams.delete("quote");
@@ -58,11 +62,14 @@ const notifyEmail = import.meta.env.PUBLIC_NOTIFY_EMAIL ?? business.email;
       return url.toString();
     }
 
-    var nextField = document.getElementById("formsubmit-next");
-    if (nextField) nextField.value = buildReturnUrl();
-
-    form.addEventListener("submit", function () {
+    document.querySelectorAll("form.js-bbncs-quote-form").forEach(function (form) {
+      if (form.dataset.returnBound === "1") return;
+      form.dataset.returnBound = "1";
+      var nextField = form.querySelector(".js-formsubmit-next");
       if (nextField) nextField.value = buildReturnUrl();
+      form.addEventListener("submit", function () {
+        if (nextField) nextField.value = buildReturnUrl();
+      });
     });
   })();
 </script>
